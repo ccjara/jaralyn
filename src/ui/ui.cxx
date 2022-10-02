@@ -14,7 +14,10 @@ void Ui::shutdown() {
 
 void Ui::update() {
     for (auto& node : ui_tree_.nodes()) {
-        node->call_handler();
+        const Id handler = node->handler_id();
+        if (handler != null_id) {
+            Scripting::invoke_callback(handler);
+        }
     }
 }
 

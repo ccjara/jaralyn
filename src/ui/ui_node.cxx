@@ -125,16 +125,12 @@ void UiNode::set_parent(UiNode* parent) {
     parent->children_.emplace_back(this);
 }
 
-void UiNode::call_handler() {
-    if (handler_) {
-        handler_.value()(this);
-    }
+void UiNode::set_handler_id(Id handler_id) {
+    handler_id_ = handler_id;
 }
 
-void UiNode::set_handler(luabridge::LuaRef ref) {
-    if (ref.isCallable()) {
-        handler_ = ref;
-    }
+Id UiNode::handler_id() const {
+    return handler_id_;
 }
 
 const std::string& UiNode::id() const {

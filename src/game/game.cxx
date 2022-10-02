@@ -35,6 +35,7 @@ void Game::init() {
 
     // scripting
     Scripting::add_api<LogApi>();
+    Scripting::add_api<EventApi>();
     Scripting::add_api<SceneApi>();
     Scripting::add_api<UiApi>();
     Scripting::add_api<CatalogApi>();

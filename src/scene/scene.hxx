@@ -4,6 +4,7 @@
 #include "../entity/entity.hxx"
 #include "../entity/move_action.hxx"
 #include "../entity/entity_factory.hxx"
+#include "../events/game_event.hxx"
 #include "../grid.hxx"
 #include "tile_builder.hxx"
 #include "../input/input_event.hxx"

@@ -71,7 +71,7 @@ void UiApi::on_register(Script* script) {
             })
             .addFunction("set_handler",
                 +[](UiNode* n, luabridge::LuaRef handler) {
-                    return n->set_handler(handler);
+                    return n->set_handler_id(Scripting::register_lua_callback(handler));
                 }
             )
             .addFunction(
@@ -90,13 +90,21 @@ void UiApi::on_register(Script* script) {
         .deriveClass<UiWindow, UiNode>("UiWindow")
             .addFunction(
                 "set_title",
-                +[](UiWindow* n, const char *title) { n->set_title(title); }
+                +[](UiWindow* n, const char *title) {
+                    if (!title) {
+                        return;
+                    }
+                    n->set_title(title);
+                }
             )
         .endClass()
         .deriveClass<UiText, UiNode>("UiText")
             .addFunction(
                 "set_text",
                 +[](UiText* n, const char *text) {
+                    if (!text) {
+                        return;
+                    }
                     n->text().set_text(text);
                     n->text().update();
                 }

@@ -55,14 +55,9 @@ public:
     UiNodeType type() const;
 
     /**
-     * @brief Invokes the current lua handler for this node
-     */
-    void call_handler();
-
-    /**
      * @brief Updates the current lua handler for this node
      */
-    void set_handler(luabridge::LuaRef ref);
+    void set_handler_id(Id handler_id);
 
     /**
      * @brief Sets the current, relative (untranslated) position of this node
@@ -161,6 +156,11 @@ public:
      * @brief Readonly accessor for the visible_ attribute
      */
     bool visible() const;
+
+    /**
+     * @brief Readonly accessor for the handler_id_ attribute
+     */
+    [[nodiscard]] Id handler_id() const;
 
     /**
      * @brief Assigns the parent and updates the references in the parent and the child
@@ -296,9 +296,9 @@ protected:
     void move_anchors();
 
     /**
-     * @brief Lua handler that will be invoked to update this node
+     * @brief Id of a lua callback that will be invoked to update this node
      */
-    std::optional<luabridge::LuaRef> handler_;
+    Id handler_id_ = null_id;
 
     /**
      * @brief Horizontal alignment (requires known size)

@@ -53,10 +53,4 @@ void ScriptXray::render_current_script(Script *current) {
     if (!current) {
         return;
     }
-    if (ImGui::TreeNode("Globals")) {
-        for (const auto& global : current->globals()) {
-            ImGui::Text("%s", global.c_str());
-        }
-        ImGui::TreePop();
-    }
 }

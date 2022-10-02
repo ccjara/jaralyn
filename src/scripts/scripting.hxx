@@ -2,36 +2,34 @@
 #define JARALYN_SCRIPT_SYSTEM_HXX
 
 #include "../game/platform_event.hxx"
+#include "../events/game_event.hxx"
 #include "../input/input_event.hxx"
+#include "lua_event.hxx"
 #include "api/lua_api.hxx"
-#include "callback_store.hxx"
 #include "script_event.hxx"
 #include "script_util.hxx"
 #include "script.hxx"
-
-using lua_event_type = u32;
-namespace lua_event { // FIXME: luabridge does not support enums
-    static lua_event_type inventory_view { 1000 };
-}
 
 class Scripting {
 public:
     Scripting() = delete;
 
-    constexpr static const char* default_script_path {
+    static const inline fs::path default_script_path = fs::absolute(
 #ifdef NDEBUG
-        "scripts"
+        "scripts/"
 #else
-        "../src/scripts/lua"
+        "../src/scripts/lua/"
 #endif
-    };
+    );
 
     /**
-     * @brief Recursively loads all scripts from the given directory path.
+     * @brief Recursively loads scripts from the given directory path.
      *
-     * Script files must have a lowercased `.lua` extension.
+     * Script files must have a lowercased `.lua` extension. Scripts inside
+     * a `lib` folder will not be loaded. These are intended to be used
+     * as modules loadable using the lua `require` command.
      *
-     * The script name will be constructed from the file path stem (filename
+     * Script names will be constructed from the file path stem (filename
      * without extension) and its directory level.
      * For each directory level visited, the stem will be prefixed with
      * the visited directory name.
@@ -41,8 +39,7 @@ public:
      *   - `scripts/very/deep/file.lua` -> `very/deep/file`
      *   - `scripts/system.lua` -> `system`
      */
-    template<typename path_like>
-    static void load_from_path(path_like base_path);
+    static void load_from_path(const fs::path& base_path);
 
     static [[nodiscard]] const std::unordered_map<u64, std::unique_ptr<Script>>& scripts();
 
@@ -61,27 +58,51 @@ public:
      */
     static void setup_script_env(Script& script);
 
+    /**
+     * @brief Invokes a callback having the given id
+     */
+    static void invoke_callback(Id callback_id);
+
+    /**
+     * @brief Accepts a callable lua to track a lua callback
+     *
+     * Returns an invokable LuaCallback
+     */
+    static Id register_lua_callback(luabridge::LuaRef& ref);
+
+    static void register_event_callback(LuaEvent event_type, luabridge::LuaRef ref);
+
     static void init();
     static void shutdown();
 private:
-    static inline std::vector<std::unique_ptr<LuaApi>> apis_;
+    struct LuaCallback {
+        /**
+         * @brief Id of the callback, unique across all scripts
+         */
+        Id id;
 
-    static inline std::unordered_map<u64, std::unique_ptr<Script>> scripts_;
+        /**
+         * @brief Id of the script containing the callback
+         */
+        Id script_id = null_id;
 
-    struct ScriptRef {
-        u64 script_id;
+        /**
+         * @brief Lua ref holding the callable
+         */
         luabridge::LuaRef ref;
     };
-    static inline std::unordered_map<lua_event_type, std::vector<ScriptRef>> listeners_;
 
-    static inline CallbackStore callback_store_;
+    static bool on_inventory_event(const InventoryEvent& e);
 
-    /**
-     * @brief Tracks a lua function that should be invoked on a specific event.
-     *
-     * The stored refs must be removed before the scripts are unloaded
-     */
-    static bool register_lua_callback(lua_event_type event_type, luabridge::LuaRef ref);
+    static inline Id next_callback_id_ = 1;
+
+    static inline std::vector<std::unique_ptr<LuaApi>> apis_;
+
+    static inline std::unordered_map<Id, std::unique_ptr<Script>> scripts_;
+
+    static inline std::unordered_map<Id, LuaCallback> callbacks_;
+
+    static inline std::unordered_map<LuaEvent, std::vector<Id>> event_callbacks_;
 
     static bool on_key_down(KeyDownEvent& e);
 
@@ -90,16 +111,25 @@ private:
      *
      * The arguments are forwarded to each callback.
      */
-    template<typename... args>
-    static void invoke_lua_callbacks(lua_event_type event_type, args&&... arguments) {
-        const auto it { listeners_.find(event_type) };
-        if (it == listeners_.end()) {
+    template<typename... Args>
+    static void invoke_event_callbacks(LuaEvent event_type, Args&&... args) {
+        const auto event_callback_iter = event_callbacks_.find(event_type);
+        if (event_callback_iter == event_callbacks_.cend()) {
             return;
         }
-        for (auto& script_ref : it->second) {
-            pcall_into(script_ref.ref, std::forward<args>(arguments)...);
+        for (Id callback_id : event_callback_iter->second) {
+            const auto callback_iter = callbacks_.find(callback_id);
+            if (callback_iter == callbacks_.cend()) {
+                continue;
+            }
+            pcall_into(callback_iter->second.ref, std::forward<Args>(args)...);
         }
     }
+
+    /**
+     * @brief Sets the package.path of the given script to the `default_script_path`
+     */
+    static void inject_package_path(Script& script);
 
     /**
      * @brief Loads a script after collecting all scripts in {@see load_from_path}
@@ -113,52 +143,6 @@ private:
      */
     static void reset();
 };
-
-template<typename path_like>
-void Scripting::load_from_path(path_like base_path) {
-    if (!scripts_.empty()) {
-        reset();
-    }
-    const auto abs_path { fs::absolute(base_path) };
-
-    if (!fs::is_directory(abs_path)) {
-        Log::error("Script path {} must be a readable directory", abs_path.string());
-        std::abort();
-    }
-
-    std::string prefix;
-
-    // default options: does not follow symlinks, skips on denied permission
-    for (const auto& entry : fs::recursive_directory_iterator(abs_path)) {
-        const auto& path { entry.path() };
-        const auto filename { path.filename().string() };
-
-        if (entry.is_directory()) {
-            prefix += filename + "/";
-            continue;
-        }
-        if (path.extension().string() == ".lua") {
-            const auto& name { prefix + path.stem().string() };
-            Log::info("Found script file {}", name);
-
-            auto script { std::make_unique<Script>(name) };
-            script->path_ = path.string().c_str();
-            std::ifstream input { path, std::ios::ate };
-            if (input.bad()) {
-                script->fail(ScriptError::BadScriptInput);
-            }
-            const auto size { input.tellg() };
-            script->source_.resize(size);
-            input.seekg(0);
-            input.read(script->source_.data(), size);
-            // TODO: gracefully handle case insensitive file systems (script names must be unique)
-            // TODO: locale-lowercase script id for convenience and consistency?
-            // TODO: check against unicode file names
-            auto [iter, b] { scripts_.try_emplace(script->id, std::move(script)) };
-            load(*iter->second);
-        }
-    }
-}
 
 template<typename Api, typename... ApiArgs>
 void Scripting::add_api(ApiArgs&&... api_args) {

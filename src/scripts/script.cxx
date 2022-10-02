@@ -1,7 +1,5 @@
 #include "script.hxx"
 
-u64 Script::next_id_ { 0 };
-
 Script::Script(const std::string& name) : id { next_id_++ }, name_(name) {
 }
 
@@ -44,19 +42,19 @@ void Script::load() {
 }
 
 void Script::unload() {
-    if (state_) {
-        {
-            auto on_unload { luabridge::getGlobal(state_, "on_unload") };
-            if (on_unload.isFunction()) {
-                pcall_into(on_unload);
-            }
-        }
-        lua_close(state_);
-        state_ = nullptr;
-        status_ = ScriptStatus::Unloaded;
+    if (!state_) {
+        return;
     }
-    globals_.clear();
-    callbacks_.clear();
+    {
+        auto on_unload = luabridge::getGlobal(state_, "on_unload");
+        if (on_unload.isFunction()) {
+            pcall_into(on_unload);
+        }
+        // on_unload must run out of scope before lua_close is called
+    }
+    lua_close(state_);
+    state_ = nullptr;
+    status_ = ScriptStatus::Unloaded;
 }
 
 ScriptStatus Script::status() const {
@@ -69,10 +67,6 @@ const std::string& Script::name() const {
 
 lua_State* Script::lua_state() const {
     return state_;
-}
-
-const std::vector<std::string>& Script::globals() const {
-    return globals_;
 }
 
 const std::string& Script::source() const {

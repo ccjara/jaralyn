@@ -110,6 +110,12 @@ bool Scene::on_key_down(KeyDownEvent& e) {
         case Key::D:
             move_relative(Vec2<i32> { 1, 0 });
             return true;
+        case Key::I: { // TEST (Needs layer stack)
+            static bool show = true;
+            Events::trigger<InventoryEvent>(show ? player->id : null_id);
+            show = !show;
+            return true;
+        }
         default:
             return false;
     }

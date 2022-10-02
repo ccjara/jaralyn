@@ -7,6 +7,7 @@
 #include "../entity/catalog.hxx"
 #include "../ai/ai_walk.hxx"
 #include "../scripts/api/catalog_api.hxx"
+#include "../scripts/api/event_api.hxx"
 #include "../scripts/api/scene_api.hxx"
 #include "../scripts/api/ui/ui_api.hxx"
 #include "../scripts/api/log_api.hxx"

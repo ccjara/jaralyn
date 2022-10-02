@@ -23,29 +23,13 @@ enum class ScriptError {
  */
 class Script {
     friend class Scripting;
-private:
-    static u64 next_id_;
-
-    std::string name_;
-    lua_State* state_ { nullptr };
-    ScriptStatus status_ { ScriptStatus::Unloaded };
-    ScriptError error_ { ScriptError::None };
-
-    std::string path_;
-    std::string source_;
-
-    std::vector<std::string> globals_;
-
-    std::unordered_map<std::string, luabridge::LuaRef> callbacks_;
-
-    void fail(ScriptError err);
 public:
-    const u64 id;
+    u64 id;
 
     /**
      * @brief Instantiates a script from a source string
      */
-    Script(const std::string& name);
+    explicit Script(const std::string& name);
 
     /**
      * @brief Frees the currently managed lua state if allocated
@@ -79,9 +63,6 @@ public:
      */
     void unload();
 
-    template<typename t>
-    void define_global(std::string_view name, t value);
-
     template<typename... types>
     inline void declare() {
         (types::declare(luabridge::getGlobalNamespace(state_)), ...);
@@ -90,7 +71,6 @@ public:
     ScriptStatus status() const;
     const std::string& name() const;
     lua_State* lua_state() const;
-    const std::vector<std::string>& globals() const;
     const std::string& source() const;
     void set_source(std::string&& source);
 
@@ -98,21 +78,18 @@ public:
     Script& operator=(Script&&) = delete;
     Script(const Script&) = delete;
     Script& operator=(const Script&) = delete;
-};
+private:
+    static inline u64 next_id_ = 1;
 
-template<typename t>
-void Script::define_global(std::string_view key, t value) {
-    if (status_ != ScriptStatus::Loaded) {
-        Log::error("Could not set global {} in script {}: script is not loaded", key, name_);
-        return;
-    }
-    const auto& stored_name { globals_.emplace_back(name) };
-    // TODO: this does not cover const char*!
-    // concepts / SFINAE....
-    if constexpr (!std::is_fundamental<t>::value) { // TODO: "requires script_declarable"
-        std::remove_pointer_t<t>::declare(luabridge::getGlobalNamespace(state_));
-    }
-    luabridge::setGlobal(state_, value, stored_name.c_str());
-}
+    std::string name_;
+    lua_State* state_ = nullptr;
+    ScriptStatus status_ = ScriptStatus::Unloaded;
+    ScriptError error_ = ScriptError::None;
+
+    std::string path_;
+    std::string source_;
+
+    void fail(ScriptError err);
+};
 
 #endif

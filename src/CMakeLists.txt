@@ -29,6 +29,7 @@ add_executable(
     "entity/move_action.cxx"
 
     "events/event_manager.cxx"
+    "events/game_event.hxx"
 
     "game/config.hxx"
     "game/game.cxx"
@@ -72,12 +73,12 @@ add_executable(
     "scene/tile_builder.cxx"
 
     "scripts/api/catalog_api.cxx"
+    "scripts/api/event_api.cxx"
     "scripts/api/log_api.cxx"
     "scripts/api/lua_api.hxx"
     "scripts/api/scene_api.cxx"
     "scripts/api/ui/ui_api.cxx"
-
-    "scripts/callback_store.cxx"
+    "scripts/lua_event.hxx"
     "scripts/script.cxx"
     "scripts/script_event.hxx"
     "scripts/script_util.hxx"

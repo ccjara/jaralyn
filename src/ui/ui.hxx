@@ -4,6 +4,7 @@
 #include "../gfx/gfx_event.hxx"
 #include "../scripts/script_event.hxx"
 #include "../gfx/renderer.hxx"
+#include "../scripts/scripting.hxx"
 #include "ui_tree.hxx"
 #include "ui_window.hxx"
 #include "ui_text.hxx"
