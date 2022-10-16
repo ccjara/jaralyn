@@ -33,26 +33,26 @@ struct Entity {
         return static_cast<Comp*>(iter->second);
     }
 
-    /**
-     * @brief Constructs a component of the given type.
-     *
-     * If a component of that type already exists, this method will return nullptr and
-     * will not create or insert the requested component.
-     */
-    template<ComponentDerived Comp, typename... ComponentArgs>
-    Comp* add_component(ComponentArgs&&... args) {
-        static_assert(Comp::static_type != ComponentType::Unknown);
-        if (components_by_type_.find(Comp::static_type) != components_by_type_.end()) {
-            return nullptr;
+    template<typename iter>
+    void copy_components(iter it, iter end) {
+        while (it != end) {
+            const auto& cloneable_component = *it;
+            ++it;
+            const auto& by_type_it = components_by_type_.find(cloneable_component->type());
+            if (by_type_it != components_by_type_.cend()) {
+                Log::error("Duplicate component type {} in entity {}", cloneable_component->type(), id);
+                continue;
+            }
+            std::unique_ptr<Component> component = cloneable_component->clone();
+            component->set_entity_id(id);
+            components_.push_back(std::move(component));
         }
-        auto component = new Comp(std::forward<ComponentArgs>(args)...);
-        component->entity_id_ = id;
-        components_.emplace_back(component);
         reindex_components();
-        return component;
     }
 
     void update(u64 dt);
+
+    [[nodiscard]] bool component_exists(ComponentType type) const;
 private:
     std::vector<std::unique_ptr<Component>> components_;
     std::unordered_map<ComponentType, Component*> components_by_type_;

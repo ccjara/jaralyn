@@ -7,7 +7,8 @@ struct AiContext {
      */
     Id entity_id;
 
-    explicit AiContext(Id entity_id);
+    // TODO: define "output node" for supporting nodes so they can pass blackboard refs
+    // down to other components (ex. trace_path -> walk_path)
 };
 
 #endif

@@ -14,7 +14,6 @@ enum class ComponentType {
  * Derive from GenericComponent instead when creating new Component classes.
  */
 class Component {
-    friend class Entity;
     friend class EntityFactory;
 public:
     virtual ~Component() = default;
@@ -35,6 +34,11 @@ public:
      * You are required to manage ownership past the return.
      */
     [[nodiscard]] virtual std::unique_ptr<Component> clone() const = 0;
+
+    /**
+     * @brief Assigns the entity id
+     */
+    virtual void set_entity_id(Id entity_id);
 
     /**
      * @brief Implementation defined update cycle for this component.

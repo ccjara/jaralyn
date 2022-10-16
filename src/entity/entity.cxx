@@ -15,3 +15,7 @@ void Entity::update(u64 dt) {
         component->update(dt);
     }
 }
+
+bool Entity::component_exists(ComponentType type) const {
+    return components_by_type_.find(type) != components_by_type_.end();
+}

@@ -9,6 +9,7 @@ Behavior::Behavior(const Behavior& other) {
     if (other.root_) {
         root_ = other.root_->clone();
     }
+    context_ = other.context_;
 }
 
 Behavior::Behavior(Behavior&& other) : Behavior() {
@@ -19,8 +20,12 @@ void Behavior::update(u64 dt) {
     if (!root_) {
         return;
     }
-    AiContext context(entity_id_);
-    root_->visit(context);
+    root_->visit(context_);
+}
+
+void Behavior::set_entity_id(Id id) {
+    entity_id_ = id;
+    context_.entity_id = id;
 }
 
 void Behavior::set_root(std::unique_ptr<AiNode>&& root) {

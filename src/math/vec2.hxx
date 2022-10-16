@@ -38,6 +38,10 @@ struct Vec2 {
         this->y = y;
     }
 
+    [[nodiscard]] constexpr float length() const {
+        return std::sqrtf(static_cast<float>(x * x + y * y));
+    }
+
     /**
      * @brief Adds the given vector
      */

@@ -15,6 +15,7 @@ public:
     friend void swap(Behavior& lhs, Behavior& rhs) {
         using std::swap;
         swap(lhs.root_, rhs.root_);
+        swap(lhs.context_, rhs.context_);
     }
 
     /**
@@ -26,6 +27,11 @@ public:
      * @brief Takes ownership of the given AiNode unique_ptr and overwrites the current root
      */
     void set_root(std::unique_ptr<AiNode>&& root);
+
+    /**
+     * @brief Assigns the entity id and tracks it in the AiContext
+     */
+    void set_entity_id(Id id) override;
 
     /**
      * @brief Sets the behavior tree root.
@@ -42,8 +48,9 @@ public:
         return *root_.get();
     }
 
-    AiNode* root() const;
+    [[nodiscard]] AiNode* root() const;
 private:
+    AiContext context_;
     std::unique_ptr<AiNode> root_;
 };
 

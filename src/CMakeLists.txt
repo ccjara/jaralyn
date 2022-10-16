@@ -13,7 +13,9 @@ add_executable(
     "ai/ai_node.cxx"
     "ai/ai_priority_selector.cxx"
     "ai/ai_script.cxx"
+    "ai/ai_trace_path.cxx"
     "ai/ai_walk.cxx"
+    "ai/ai_walk_path.cxx"
 
     "entity/action.hxx"
     "entity/entity.cxx"
@@ -54,6 +56,7 @@ add_executable(
 
     "main.cxx"
 
+    "math/astar.cxx"
     "math/bresenham.hxx"
     "math/rect.hxx"
     "math/vec2.hxx"

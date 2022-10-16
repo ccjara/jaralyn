@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <deque>
+#include <queue>
 #include <filesystem>
 #include <fstream>
 #include <functional>
