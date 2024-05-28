@@ -2,23 +2,20 @@
 #define JARALYN_SCENE_HXX
 
 #include "../entity/action.hxx"
-#include "../game/engine_events.hxx"
-#include "../entity/entity.hxx"
+#include "../events/event_manager.hxx"
 #include "../grid.hxx"
 #include "../input/input_event.hxx"
 #include "../entity/fov.hxx"
 
-struct Action;
 struct Archetype;
 
 /**
  * @brief Contains and manages entities.
  */
 class Scene {
-    using ActionContainer = std::vector<std::unique_ptr<Action>>;
     using EntityContainer = std::vector<std::unique_ptr<Entity>>;
 public:
-    static void init();
+    static void init(EventManager* events);
     static void shutdown();
 
     /**
@@ -68,37 +65,6 @@ public:
     static void draw();
 
     /**
-     * @brief Constructs an action in place inside the action queue.
-     *
-     * The action's cost is calculated here and depends on the speed of the
-     * entity. Later changes to the Entity's speed will will not affect this
-     * cost.
-     *
-     * Returns a reference to the created action.
-     */
-    template<typename A, typename... EntityArgs>
-    static Action& create_action(Entity* entity, EntityArgs&&... args) {
-        assert(entity);
-
-        auto& action = *actions_.emplace_back(
-            new A(std::forward<EntityArgs>(args)...)
-        ).get();
-
-        action.entity = entity;
-        action.speed = entity->speed;
-
-        if (action.speed < 1) {
-            action.speed = 1;
-        }
-
-        action.cost = action.base_cost() / entity->speed;
-
-        entity->energy -= action.cost;
-
-        return action;
-    }
-
-    /**
      * @brief Assigns the given Entity id as the new player to control.
      *
      * May be and is initially unset to signify no player currently exists.
@@ -120,13 +86,14 @@ private:
     static bool on_key_down(KeyDownEvent& e);
 
     static inline EntityContainer entities_;
-    static inline ActionContainer actions_;
     static inline Id player_id_ = null_id;
     static inline Action* player_action_ = nullptr;
     static inline std::unordered_map<Id, size_t> entity_id_to_index_;
     static inline std::unordered_map<ComponentType, std::vector<Entity*>> entities_by_components_;
 
     static inline Grid<Tile> tiles_;
+
+    static inline EventManager* events_ = nullptr;
 };
 
 #endif

@@ -1,12 +1,13 @@
 #ifndef JARALYN_XRAY_HXX
 #define JARALYN_XRAY_HXX
 
-#include "../game/engine_events.hxx"
 #include "../gfx/gfx_event.hxx"
 #include "../game/window.hxx"
 #include "../input/input_event.hxx"
 #include "xray_interface.hxx"
 #include "xray_event.hxx"
+
+class EventManager;
 
 class Xray {
 public:
@@ -20,7 +21,7 @@ public:
         xrays_.emplace_back(new XrayClass(std::forward<XrayArgs>(xray_args)...));
     }
 
-    static void init(SDL_GLContext context);
+    static void init(EventManager *events, SDL_GLContext context);
     static void shutdown();
 private:
     /**

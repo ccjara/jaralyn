@@ -19,7 +19,13 @@ add_executable(
     "ai/blackboard.cxx"
     "ai/generic_ai_node.hxx"
 
+    "engine/service_locator.hxx"
+
     "entity/action.hxx"
+    "entity/action_creator.hxx"
+    "entity/action_event.hxx"
+    "entity/action_processor.hxx"
+    "entity/action_queue.cxx"
     "entity/archetype.hxx"
     "entity/catalog.cxx"
     "entity/components/behavior.cxx"
@@ -38,7 +44,6 @@ add_executable(
     "events/event_manager.cxx"
 
     "game/config.hxx"
-    "game/engine_events.hxx"
     "game/game.cxx"
     "game/platform_event.hxx"
     "game/window.cxx"
@@ -94,6 +99,9 @@ add_executable(
     "ui/ui_text.cxx"
     "ui/ui_tree.cxx"
     "ui/ui_window.cxx"
+
+    "world/entity_provider.hxx"
+    "world/world.cxx"
 
     "xray/log_xray.cxx"
     "xray/scene_xray.cxx"

@@ -1,8 +1,10 @@
 #include "script_xray.hxx"
+#include "../events/event_manager.hxx"
 
-ScriptXray::ScriptXray() {
-    EngineEvents::on<ScriptLoadedEvent>(this, &ScriptXray::on_script_loaded);
-    EngineEvents::on<ScriptResetEvent>(this, &ScriptXray::on_script_reset);
+ScriptXray::ScriptXray(EventManager* events) {
+    assert(events);
+    events->on<ScriptLoadedEvent>(this, &ScriptXray::on_script_loaded);
+    events->on<ScriptResetEvent>(this, &ScriptXray::on_script_reset);
 }
 
 bool ScriptXray::on_script_loaded(ScriptLoadedEvent& e) {

@@ -1,14 +1,15 @@
 #ifndef JARALYN_SCRIPT_XRAY_HXX
 #define JARALYN_SCRIPT_XRAY_HXX
 
-#include "../game/engine_events.hxx"
 #include "xray_interface.hxx"
 #include "xray_style.hxx"
 #include "../scripts/scripting.hxx"
 
+class EventManager;
+
 class ScriptXray : public IXray {
 public:
-    ScriptXray();
+    ScriptXray(EventManager* events);
 
     void update() override;
 private:

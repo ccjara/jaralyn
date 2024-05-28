@@ -2,8 +2,21 @@
 
 void Game::init() {
     Log::init();
-    EngineEvents::init();
-    EngineEvents::on<ScriptLoadedEvent>(this, &Game::on_script_loaded);
+
+    services_ = std::make_unique<ServiceLocator>();
+    events_ = std::make_unique<EventManager>();
+    world_ = std::make_unique<World>();
+    action_queue_ = std::make_unique<ActionQueue>(events_.get());
+
+    services_->provide(events_.get());
+    services_->provide(world_.get());
+    services_->provide<IEntityProvider>(world_.get());
+
+    services_->provide(action_queue_.get());
+    services_->provide<IActionCreator>(action_queue_.get());
+    services_->provide<IActionProcessor>(action_queue_.get());
+
+    events_->on<ScriptLoadedEvent>(this, &Game::on_script_loaded);
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         Log::error("SDL could not initialize: {}", SDL_GetError());
@@ -18,26 +31,25 @@ void Game::init() {
         static_cast<u32>(static_cast<float>(display_bounds.h) / 1.25f)
     }, "Jaralyn");
 
-
-    Renderer::init();
-    Ui::init(&Renderer::ui_layer());
-    Scene::init();
-    Scripting::init();
+    Renderer::init(events_.get());
+    Ui::init(events_.get(), &Renderer::ui_layer());
+    Scene::init(events_.get());
+    Scripting::init(events_.get());
 
     Translator::load("en");
 
     // xray / engine ui
-    Xray::init(Renderer::gl_context());
+    Xray::init(events_.get(), Renderer::gl_context());
     Xray::add<LogXray>();
-    Xray::add<SceneXray>();
-    Xray::add<ScriptXray>();
+    Xray::add<SceneXray>(events_.get());
+    Xray::add<ScriptXray>(events_.get());
     Xray::add<UiXray>();
 
     // scripting
     Scripting::add_api<LogApi>();
     Scripting::add_api<SceneApi>();
     Scripting::add_api<UiApi>();
-    Scripting::add_api<CatalogApi>();
+    Scripting::add_api<CatalogApi>(services_.get());
 
     Scripting::load_from_path(Scripting::default_script_path);
 
@@ -72,7 +84,6 @@ void Game::shutdown() {
     Renderer::shutdown();
     Window::close();
     SDL_Quit();
-    EngineEvents::shutdown();
 }
 
 void Game::process_os_messages() {
@@ -92,38 +103,38 @@ void Game::process_os_messages() {
                         static_cast<u32> (e.window.data1),
                         static_cast<u32> (e.window.data2)
                     });
-                    EngineEvents::trigger<ResizeEvent>(Window::size());
+                    events_->trigger<ResizeEvent>(Window::size());
                 }
                 break;
             }
             case SDL_EventType::SDL_KEYDOWN: {
                 const Key key { static_cast<Key>(e.key.keysym.sym) };
                 Input::keyboard_.key_down(key);
-                EngineEvents::trigger<KeyDownEvent>(key);
+                events_->trigger<KeyDownEvent>(key);
                 break;
             }
             case SDL_EventType::SDL_KEYUP: {
                 const auto key { static_cast<Key>(e.key.keysym.sym) };
                 Input::keyboard_.key_up(key);
-                EngineEvents::trigger<KeyUpEvent>(key);
+                events_->trigger<KeyUpEvent>(key);
                 break;
             }
             case SDL_EventType::SDL_MOUSEBUTTONDOWN: {
                 const auto button { static_cast<MouseButton>(e.button.button) };
                 Input::mouse_.mouse_down(button);
-                EngineEvents::trigger<MouseDownEvent>(button);
+                events_->trigger<MouseDownEvent>(button);
                 break;
             }
             case SDL_EventType::SDL_MOUSEBUTTONUP: {
                 const auto button { static_cast<MouseButton>(e.button.button) };
                 Input::mouse_.mouse_up(button);
-                EngineEvents::trigger<MouseUpEvent>(button);
+                events_->trigger<MouseUpEvent>(button);
                 break;
             }
             case SDL_EventType::SDL_MOUSEMOTION: {
                 const Vec2<i32> pos { e.motion.x, e.motion.y };
                 Input::mouse_.move(pos);
-                EngineEvents::trigger<MouseMoveEvent>(pos);
+                events_->trigger<MouseMoveEvent>(pos);
                 break;
             }
         }
@@ -199,5 +210,5 @@ void Game::configure_from_lua(luabridge::LuaRef cfg) {
     } else {
         report("Expected gfx:glyph_size to be a table");
     }
-    EngineEvents::trigger<ConfigUpdatedEvent>(cfg_prev, config_);
+    events_->trigger<ConfigUpdatedEvent>(cfg_prev, config_);
 }

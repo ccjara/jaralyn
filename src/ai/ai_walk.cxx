@@ -1,6 +1,15 @@
 #include "ai_walk.hxx"
+#include "../entity/entity.hxx"
+#include "../entity/action_creator.hxx"
 #include "../entity/move_action.hxx"
-#include "../scene/scene.hxx"
+#include "../world/entity_provider.hxx"
+
+AiWalk::AiWalk(IActionCreator* action_creator, IEntityProvider* entity_provider) : 
+    action_creator_(action_creator), 
+    entity_provider_(entity_provider) {
+    assert(action_creator_);
+    assert(entity_provider_);
+}
 
 void AiWalk::clear() {
     mod_state(AiNodeState::Ready);
@@ -10,7 +19,7 @@ void AiWalk::clear() {
 
 AiNodeState AiWalk::visit(AiContext& context) {
     static int dir = 0;
-    auto entity = Scene::get_entity_by_id(context.entity_id);
+    auto entity = entity_provider_->get_entity_by_id(context.entity_id);
     if (!entity) {
         return mod_state(AiNodeState::Failed);
     }
@@ -32,7 +41,7 @@ AiNodeState AiWalk::perform_walk_to_entity(AiContext& context) {
     if (!target_id) {
         return mod_state(AiNodeState::Failed);
     }
-    auto target = Scene::get_entity_by_id(*target_id);
+    auto target = entity_provider_->get_entity_by_id(*target_id);
     if (!target) {
         return mod_state(AiNodeState::Failed);
     }
@@ -51,7 +60,7 @@ AiNodeState AiWalk::perform_walk_to_entity(AiContext& context) {
         --position.y;
     }
 
-    Scene::create_action<MoveAction>(context.entity, position);
+    action_creator_->create_action(*context.entity, std::make_unique<MoveAction>(position));
 
     return mod_state(AiNodeState::Failed); // TODO: this must be changed later when repeatable actions (by conditions) are implemented
 }
@@ -71,7 +80,7 @@ AiNodeState AiWalk::perform_walk_around(AiContext& context) {
     }
     ++dir %= 4;
 
-    Scene::create_action<MoveAction>(context.entity, pos);
+    action_creator_->create_action(*context.entity, std::make_unique<MoveAction>(pos));
     return mod_state(AiNodeState::Succeeded);
 }
 

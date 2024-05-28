@@ -24,6 +24,9 @@
 #include "../gfx/renderer.hxx"
 #include "../scripts/scripting.hxx"
 #include "../xray/xray.hxx"
+#include "../engine/service_locator.hxx"
+#include "../world/world.hxx"
+#include "../entity/action_queue.hxx"
 
 class Game {
 public:
@@ -70,6 +73,11 @@ private:
     void configure_from_lua(luabridge::LuaRef cfg);
 
     bool on_script_loaded(ScriptLoadedEvent&);
+
+    std::unique_ptr<EventManager> events_;
+    std::unique_ptr<ActionQueue> action_queue_;
+    std::unique_ptr<ServiceLocator> services_ = nullptr;
+    std::unique_ptr<World> world_ = nullptr;
 };
 
 #endif

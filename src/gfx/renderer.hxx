@@ -3,10 +3,11 @@
 
 #include "display.hxx"
 #include "text_shader.hxx"
-#include "../game/engine_events.hxx"
 #include "../game/platform_event.hxx"
 #include "../game/window.hxx"
 #include "gfx_event.hxx"
+
+class EventManager;
 
 /**
  * @brief Executes GL rendering operations
@@ -15,7 +16,7 @@ class Renderer {
 public:
     Renderer() = delete;
 
-    static void init();
+    static void init(EventManager* events);
     static void shutdown();
 
     /**
@@ -95,6 +96,8 @@ private:
     static inline void configure(const Config& cfg);
 
     static inline std::array<Display, 2> layers_;
+
+    static inline EventManager* events_ = nullptr;
 };
 
 #endif

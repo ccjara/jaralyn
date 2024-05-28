@@ -1,4 +1,5 @@
 #include "renderer.hxx"
+#include "../events/event_manager.hxx"
 
 void Renderer::shutdown() {
     if (vao) {
@@ -13,9 +14,11 @@ void Renderer::shutdown() {
     }
 }
 
-void Renderer::init() {
-    EngineEvents::on<ResizeEvent>(&Renderer::on_resize);
-    EngineEvents::on<ConfigUpdatedEvent>(&Renderer::on_config_updated);
+void Renderer::init(EventManager* events) {
+    assert(events);
+    events_ = events;
+    events_->on<ResizeEvent>(&Renderer::on_resize);
+    events_->on<ConfigUpdatedEvent>(&Renderer::on_config_updated);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -81,7 +84,7 @@ void Renderer::render() {
         glDrawArrays(GL_POINTS, 0, layer.cell_count());
     }
 
-    EngineEvents::trigger<PostRenderEvent>();
+    events_->trigger<PostRenderEvent>();
 
     SDL_GL_SwapWindow(Window::handle());
 }
@@ -144,7 +147,7 @@ void Renderer::adjust_display() {
         layer.resize(display_size);
     }
 
-    EngineEvents::trigger<DisplayResizedEvent>(display_size);
+    events_->trigger<DisplayResizedEvent>(display_size);
     Log::debug("Display resized to {}x{} cells", display_size.x, display_size.y);
 }
 

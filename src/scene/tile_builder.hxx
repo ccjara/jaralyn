@@ -5,12 +5,12 @@
 
 class TileBuilder {
 public:
-    [[nodiscard]] static Tile none();
-    [[nodiscard]] static Tile wall();
-    [[nodiscard]] static Tile floor();
-    [[nodiscard]] static Tile water();
+    static Tile none();
+    static Tile wall();
+    static Tile floor();
+    static Tile water();
 
-    [[nodiscard]] static Tile for_type(TileType type);
+    static Tile for_type(TileType type);
 };
 
 #endif

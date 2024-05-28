@@ -5,9 +5,10 @@
 #include "../entity/components/render.hxx"
 #include "../scene/tile_builder.hxx"
 
-SceneXray::SceneXray() {
-    EngineEvents::on<MouseDownEvent>(this, &SceneXray::on_mouse_down, 9000);
-    EngineEvents::on<ConfigUpdatedEvent>(this, &SceneXray::on_config_updated, 9000);
+SceneXray::SceneXray(EventManager* events) {
+    assert(events);
+    events->on<MouseDownEvent>(this, &SceneXray::on_mouse_down, 9000);
+    events->on<ConfigUpdatedEvent>(this, &SceneXray::on_config_updated, 9000);
 }
 
 bool SceneXray::on_config_updated(ConfigUpdatedEvent& e) {

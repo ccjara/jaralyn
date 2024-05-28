@@ -12,7 +12,7 @@ public:
      * The function must return a boolean, indicating whether the event was `handled`
      * and should not propagate further to any other event handlers.
      *
-     * The higher the {@param priority} the earlier the handler will be called.
+     * The higher the priority the earlier the handler will be called.
      */
     template<typename E, typename Fn>
     void on(Fn callable, i32 priority = 0) {
@@ -26,7 +26,7 @@ public:
      * The function must return a boolean, indicating whether the event was `handled`
      * and should not propagate further to any other event handlers.
      *
-     * The higher the {@param priority} the earlier the handler will be called.
+     * The higher the priority the earlier the handler will be called.
      */
     template<typename E, typename Inst, MethodInvocable Fn>
     void on(Inst* instance, Fn method, i32 priority = 0) {

@@ -1,7 +1,10 @@
 #include "scripting.hxx"
+#include "../events/event_manager.hxx"
 
-void Scripting::init() {
-    EngineEvents::on<KeyDownEvent>(&Scripting::on_key_down);
+void Scripting::init(EventManager* events) {
+    assert(events);
+    events_ = events;
+    events_->on<KeyDownEvent>(&Scripting::on_key_down);
 }
 
 void Scripting::shutdown() {
@@ -10,7 +13,7 @@ void Scripting::shutdown() {
 }
 
 void Scripting::reset() {
-    EngineEvents::trigger<ScriptResetEvent>();
+    events_->trigger<ScriptResetEvent>();
     listeners_.clear();
     scripts_.clear();
 }
@@ -35,7 +38,7 @@ void Scripting::load(Script& script) {
     setup_script_env(script);
 
     // allow other parts of the system to contribute to the scripting env
-    EngineEvents::trigger<ScriptLoadedEvent>(&script);
+    events_->trigger<ScriptLoadedEvent>(&script);
     Log::info("Script #{}: {} has been loaded", script.id, script.name());
     script.run();
     // execute the on_load function, passing the script env proxy

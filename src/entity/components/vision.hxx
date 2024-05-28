@@ -2,7 +2,6 @@
 #define JARALYN_VISION_HXX
 
 #include "generic_component.hxx"
-#include "../../scene/scene.hxx"
 #include "../fov.hxx"
 
 /**

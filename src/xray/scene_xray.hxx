@@ -1,7 +1,6 @@
 #ifndef JARALYN_SCENE_XRAY_HXX
 #define JARALYN_SCENE_XRAY_HXX
 
-#include "../game/engine_events.hxx"
 #include "xray_interface.hxx"
 #include "../input/input.hxx"
 #include "../input/input_event.hxx"
@@ -11,7 +10,7 @@
 
 class SceneXray : public IXray {
 public:
-    SceneXray();
+    SceneXray(EventManager* events);
 
     void update() override;
 private:

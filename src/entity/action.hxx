@@ -1,7 +1,7 @@
 #ifndef JARALYN_ACTION_HXX
 #define JARALYN_ACTION_HXX
 
-#include "entity.hxx"
+class Entity;
 
 /**
  * @brief Base class for an action any controller may produce for an Entity.

@@ -1,13 +1,18 @@
 #include "ui.hxx"
+#include "../gfx/display.hxx"
+#include "../events/event_manager.hxx"
 
-void Ui::init(Display* display) {
+void Ui::init(EventManager* events, Display* display) {
+    assert(events);
     assert(display);
 
+    events_ = events;
     display_ = display;
+
     ui_tree_.create_root_node();
 
-    EngineEvents::on<DisplayResizedEvent>(&Ui::on_display_resized);
-    EngineEvents::on<ScriptResetEvent>(&Ui::on_script_reset);
+    events_->on<DisplayResizedEvent>(&Ui::on_display_resized);
+    events_->on<ScriptResetEvent>(&Ui::on_script_reset);
 }
 
 void Ui::shutdown() {

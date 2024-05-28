@@ -1,4 +1,5 @@
 #include "scene.hxx"
+#include "../entity/entity_event.hxx"
 #include "../entity/move_action.hxx"
 #include "../entity/entity_factory.hxx"
 #include "../entity/components/render.hxx"
@@ -6,13 +7,16 @@
 #include "../gfx/renderer.hxx"
 #include "tile_builder.hxx"
 
-void Scene::init() {
+void Scene::init(EventManager* events) {
+    events_ = events;
+    assert(events_);
+
     tiles_.resize({ 120, 40 });
     for (auto& t : tiles_.cells()) {
         t = TileBuilder::floor();
     }
 
-    EngineEvents::on<KeyDownEvent>(&Scene::on_key_down);
+    events_->on<KeyDownEvent>(&Scene::on_key_down);
 }
 
 void Scene::shutdown() {
@@ -62,17 +66,8 @@ void Scene::update() {
     for (auto& entity : entities_) {
         entity->update(player_action_->cost);
     }
-    std::sort(
-        actions_.begin(),
-        actions_.end(),
-        [](const auto& a, const auto& b) {
-            return a->speed > b->speed;
-        }
-    );
-    for (auto& action : actions_) {
-        action->perform();
-    }
-    actions_.clear();
+
+    events_->trigger<EntitiesUpdated>();
 
     for (auto& entity : entities_) {
         entity->on_after_actions();
@@ -168,7 +163,8 @@ bool Scene::on_key_down(KeyDownEvent& e) {
         return false;
     }
     auto move_relative = [=](Vec2<i32> direction) {
-        player_action_ = &create_action<MoveAction>(player, player->position + direction);
+        // TODO: -> action_creator_->create_action(player, player->position + direction);
+        // player_action_ = &create_action<MoveAction>(player, player->position + direction);
     };
     switch (e.key) {
         case Key::W:

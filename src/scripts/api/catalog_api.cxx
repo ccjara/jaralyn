@@ -1,4 +1,12 @@
 #include "catalog_api.hxx"
+#include "../../engine/service_locator.hxx"
+
+class IActionCreator;
+class IEntityProvider;
+
+CatalogApi::CatalogApi(ServiceLocator* services) : services_(services) {
+    assert(services_);
+}
 
 void CatalogApi::on_register(Script* script) {
     script->define_enum(
@@ -135,7 +143,7 @@ AiNodeType parse_node_type(const luabridge::LuaRef& ref) {
     }
 }
 
-std::unique_ptr<AiNode> create_behavior_node(const luabridge::LuaRef& ref) {
+std::unique_ptr<AiNode> CatalogApi::create_behavior_node(const luabridge::LuaRef& ref) {
     const auto type_ref = ref["type"];
     const auto type = parse_node_type(type_ref);
 
@@ -206,7 +214,7 @@ std::unique_ptr<AiNode> create_behavior_node(const luabridge::LuaRef& ref) {
             break;
         }
         case AiNodeType::Walk: {
-            base_node_ptr = std::make_unique<AiWalk>();
+            base_node_ptr = std::make_unique<AiWalk>(services_->get<IActionCreator>(), services_->get<IEntityProvider>());
             auto node_ptr = static_cast<AiWalk*>(base_node_ptr.get());
             const auto walk_target_key = ref["walk_target_key"];
             if (walk_target_key.isString()) {

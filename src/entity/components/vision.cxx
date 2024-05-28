@@ -1,5 +1,5 @@
 #include "vision.hxx"
-#include "../entity.hxx"
+#include "../../scene/scene.hxx"
 
 void Vision::update(u64 dt) {
 }
