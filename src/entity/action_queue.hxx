@@ -9,22 +9,30 @@ class EntitiesUpdated;
 
 class ActionQueue : public IActionCreator, public IActionProcessor {
 public:
-    explicit ActionQueue(EventManager* event_manager);
+    explicit ActionQueue(EventManager* event_manager, ServiceLocator* services);
 
     /**
      * @copydoc IActionCreator::create_action
     */
-    void create_action(Entity& actor, std::unique_ptr<Action>&& action) override;
+    CreateActionResult create_action(ActionType type, Entity& actor, bool player_action = false) override;
 
     /**
      * @copydoc IActionProcessor::process_actions
     */
     void process_actions() override;
 private:
+    std::unique_ptr<Action> instantiate_action(ActionType type);
+
     bool on_entities_updated(const EntitiesUpdated& event);
 
+    bool sufficient_energy(ActionType type, Entity& actor) const;
+
+    u32 base_cost(ActionType type) const;
+
     std::vector<std::unique_ptr<Action>> actions_;
-    EventManager* events_;
+
+    EventManager* events_ = nullptr;
+    ServiceLocator* services_ = nullptr;
 };
 
 #endif

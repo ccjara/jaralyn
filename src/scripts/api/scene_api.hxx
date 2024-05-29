@@ -4,8 +4,12 @@
 #include "lua_api.hxx"
 #include "../../scene/scene.hxx"
 
+class IEntityReader;
+
 class SceneApi final : public LuaApi {
 public:
+    explicit SceneApi(IEntityReader* reader);
+
     void on_register(Script* script) final override;
 
     /**
@@ -28,6 +32,8 @@ public:
      * Returns null_id if no player currently exists
      */
     Id player_id() const;
+private:
+    IEntityReader* entity_reader_ = nullptr;
 };
 
 #endif

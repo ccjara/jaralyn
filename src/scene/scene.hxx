@@ -6,6 +6,7 @@
 #include "../grid.hxx"
 #include "../input/input_event.hxx"
 #include "../entity/fov.hxx"
+#include "engine/service_locator.hxx"
 
 struct Archetype;
 
@@ -15,13 +16,13 @@ struct Archetype;
 class Scene {
     using EntityContainer = std::vector<std::unique_ptr<Entity>>;
 public:
-    static void init(EventManager* events);
+    static void init(EventManager* events, ServiceLocator* services);
     static void shutdown();
 
     /**
      * @brief Returns a pointer to an Entity for the given id or nullptr if not found.
      */
-    static Entity* get_entity_by_id(Id id);
+    static Entity* entity(Id id);
 
     /**
      * @brief Constructs an Entity of the given archetype and returns it.
@@ -89,11 +90,11 @@ private:
     static inline Id player_id_ = null_id;
     static inline Action* player_action_ = nullptr;
     static inline std::unordered_map<Id, size_t> entity_id_to_index_;
-    static inline std::unordered_map<ComponentType, std::vector<Entity*>> entities_by_components_;
 
     static inline Grid<Tile> tiles_;
 
     static inline EventManager* events_ = nullptr;
+    static inline ServiceLocator* services_ = nullptr;
 };
 
 #endif

@@ -22,6 +22,7 @@
 #include <random>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <type_traits>
 
 #define FMT_HEADER_ONLY

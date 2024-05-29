@@ -2,7 +2,7 @@
 #include "../../engine/service_locator.hxx"
 
 class IActionCreator;
-class IEntityProvider;
+class IEntityReader;
 
 CatalogApi::CatalogApi(ServiceLocator* services) : services_(services) {
     assert(services_);
@@ -205,7 +205,7 @@ std::unique_ptr<AiNode> CatalogApi::create_behavior_node(const luabridge::LuaRef
             break;
         }
         case AiNodeType::ClosestEntity: {
-            base_node_ptr = std::make_unique<AiClosestEntity>();
+            base_node_ptr = std::make_unique<AiClosestEntity>(services_->get<IEntityReader>());
             auto node_ptr = static_cast<AiClosestEntity*>(base_node_ptr.get());
             const auto found_target_key_ref = ref["found_target_key"];
             if (found_target_key_ref.isString()) {
@@ -214,7 +214,7 @@ std::unique_ptr<AiNode> CatalogApi::create_behavior_node(const luabridge::LuaRef
             break;
         }
         case AiNodeType::Walk: {
-            base_node_ptr = std::make_unique<AiWalk>(services_->get<IActionCreator>(), services_->get<IEntityProvider>());
+            base_node_ptr = std::make_unique<AiWalk>(services_->get<IActionCreator>(), services_->get<IEntityReader>());
             auto node_ptr = static_cast<AiWalk*>(base_node_ptr.get());
             const auto walk_target_key = ref["walk_target_key"];
             if (walk_target_key.isString()) {

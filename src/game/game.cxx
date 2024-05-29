@@ -6,11 +6,13 @@ void Game::init() {
     services_ = std::make_unique<ServiceLocator>();
     events_ = std::make_unique<EventManager>();
     world_ = std::make_unique<World>();
-    action_queue_ = std::make_unique<ActionQueue>(events_.get());
+    action_queue_ = std::make_unique<ActionQueue>(events_.get(), services_.get());
 
     services_->provide(events_.get());
     services_->provide(world_.get());
-    services_->provide<IEntityProvider>(world_.get());
+    services_->provide<IEntityReader>(world_.get());
+    services_->provide<IEntityWriter>(world_.get());
+    services_->provide<ITileReader>(world_.get());
 
     services_->provide(action_queue_.get());
     services_->provide<IActionCreator>(action_queue_.get());
@@ -33,7 +35,7 @@ void Game::init() {
 
     Renderer::init(events_.get());
     Ui::init(events_.get(), &Renderer::ui_layer());
-    Scene::init(events_.get());
+    Scene::init(events_.get(), services_.get());
     Scripting::init(events_.get());
 
     Translator::load("en");
@@ -41,13 +43,13 @@ void Game::init() {
     // xray / engine ui
     Xray::init(events_.get(), Renderer::gl_context());
     Xray::add<LogXray>();
-    Xray::add<SceneXray>(events_.get());
+    Xray::add<SceneXray>(world_.get(), events_.get());
     Xray::add<ScriptXray>(events_.get());
     Xray::add<UiXray>();
 
     // scripting
     Scripting::add_api<LogApi>();
-    Scripting::add_api<SceneApi>();
+    Scripting::add_api<SceneApi>(world_.get());
     Scripting::add_api<UiApi>();
     Scripting::add_api<CatalogApi>(services_.get());
 
@@ -60,7 +62,7 @@ void Game::init() {
         auto arch_troll = Catalog::archetype("TROLL");
         auto arch_dwarf = Catalog::archetype("DWARF");
         if (arch_troll) {
-            auto& troll = Scene::create_entity(*arch_troll);
+            auto& troll = world_->create_entity(*arch_troll);
             troll.position = { 3, 3 };
             //troll.ai.add<AiWalk>(0, &troll);
             // player.add_component<Skills>();
@@ -68,7 +70,7 @@ void Game::init() {
             Log::warn("TROLL archetype not yet present");
         }
         if (arch_dwarf) {
-            auto& dwarf = Scene::create_entity(*arch_dwarf);
+            auto& dwarf = world_->create_entity(*arch_dwarf);
             dwarf.position = { 0, 1 };
             Scene::set_player(dwarf.id);
         } else {

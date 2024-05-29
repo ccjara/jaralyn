@@ -1,8 +1,12 @@
 #include "ai_closest_entity.hxx"
 #include "../entity/entity.hxx"
 #include "../entity/action.hxx"
-#include "../scene/scene.hxx"
 #include "../entity/components/vision.hxx"
+#include "world/entity_reader.hxx"
+
+AiClosestEntity::AiClosestEntity(IEntityReader* entity_reader) : entity_reader_(entity_reader) {
+    assert(entity_reader_);
+}
 
 AiNodeState AiClosestEntity::visit(AiContext& context) {
     if (!context.entity) {
@@ -19,7 +23,7 @@ AiNodeState AiClosestEntity::visit(AiContext& context) {
     const auto radius = vision->vision_radius();
 
     // OPTIMIZE: quadtree
-    for (const auto& entity : Scene::entities()) {
+    for (const auto& entity : entity_reader_->entities()) {
         if (entity->id == context.entity_id) {
             continue;
         }

@@ -1,6 +1,9 @@
 #ifndef JARALYN_ACTION_HXX
 #define JARALYN_ACTION_HXX
 
+#include "action_type.hxx"
+#include "action_result.hxx"
+
 class Entity;
 
 /**
@@ -8,25 +11,45 @@ class Entity;
  *
  * TODO: Rename to Command?
  */
-struct Action {
-    virtual ~Action() = default;
-
+class Action {
+public:
     /**
      * @brief Extension point for subclasses defining a concrete action.
      *
      * Returns true if the action was performed successfully.
      */
-    virtual bool perform() = 0;
+    virtual ActionResult perform() = 0;
 
     /**
-     * @brief Must be specified for each concrete action to calculate the cost.
+     * @brief Returns the type of this action.
      */
-    virtual u32 base_cost() const = 0;
+    ActionType type() const;
+
+    /**
+     * @brief Returns the entity performing this action.
+     */
+    Entity* entity() const;
+
+    /**
+     * @brief Returns the cost of this action.
+     */
+    u32 cost() const;
+
+    /**
+     * @brief Returns the speed of the entity performing this action.
+     */
+    u32 speed() const;
+
+    virtual ~Action() = default;
+protected:
+    friend class ActionQueue;
+
+    ActionType type_ = ActionType::None;
 
     /**
      * @brief Points to the Entity performing this action.
      */
-    Entity* entity { nullptr };
+    Entity* entity_ = nullptr;
 
     /**
      * @brief Speed at which this action performs.
@@ -34,12 +57,12 @@ struct Action {
      * This speed is unaffected by changes to the entity's speed being made
      * after this action was created.
      */
-    u32 speed { 0U };
+    u32 speed_ = 0;
 
     /**
-     * @brief Calculated cost based on base cost and speed.
+     * @brief Calculated cost during action creation
      */
-    u32 cost { 0U };
+    u32 cost_ = 0;
 };
 
 #endif

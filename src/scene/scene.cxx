@@ -6,10 +6,13 @@
 #include "../entity/components/vision.hxx"
 #include "../gfx/renderer.hxx"
 #include "tile_builder.hxx"
+#include "entity/action_creator.hxx"
 
-void Scene::init(EventManager* events) {
+void Scene::init(EventManager* events, ServiceLocator* services) {
     events_ = events;
+    services_ = services;
     assert(events_);
+    assert(services_);
 
     tiles_.resize({ 120, 40 });
     for (auto& t : tiles_.cells()) {
@@ -22,7 +25,7 @@ void Scene::init(EventManager* events) {
 void Scene::shutdown() {
 }
 
-Entity* Scene::get_entity_by_id(u64 id) {
+Entity* Scene::entity(u64 id) {
     auto it = entity_id_to_index_.find(id);
     if (it == entity_id_to_index_.end()) {
         return nullptr;
@@ -64,7 +67,7 @@ void Scene::update() {
     tiles_.each([](Tile& tile) { tile.fov = false; });
 
     for (auto& entity : entities_) {
-        entity->update(player_action_->cost);
+        entity->update(player_action_->cost());
     }
 
     events_->trigger<EntitiesUpdated>();
@@ -132,7 +135,7 @@ void Scene::draw() {
 }
 
 void Scene::set_player(u64 id) {
-    Entity* next_player = get_entity_by_id(id);
+    Entity* next_player = entity(id);
     if (next_player == nullptr) {
         Log::error("Cannot set entity {} as player: not found", id);
         return;
@@ -150,7 +153,7 @@ void Scene::set_player(u64 id) {
 }
 
 Entity* Scene::player() {
-    return get_entity_by_id(player_id_);
+    return entity(player_id_);
 }
 
 u64 Scene::player_id() {
@@ -163,8 +166,12 @@ bool Scene::on_key_down(KeyDownEvent& e) {
         return false;
     }
     auto move_relative = [=](Vec2<i32> direction) {
-        // TODO: -> action_creator_->create_action(player, player->position + direction);
-        // player_action_ = &create_action<MoveAction>(player, player->position + direction);
+        player->energy = 99999;
+        auto res = services_->get<IActionCreator>()->create_action(ActionType::Move, *player);
+        if (res.action != nullptr) {
+             static_cast<MoveAction*>(res.action)->destination = player->position + direction;
+             player_action_ = res.action;
+        }
     };
     switch (e.key) {
         case Key::W:

@@ -2,19 +2,24 @@
 #define JARALYN_SCENE_XRAY_HXX
 
 #include "xray_interface.hxx"
-#include "../input/input.hxx"
-#include "../input/input_event.hxx"
-#include "../scene/scene.hxx"
-#include "../gfx/renderer.hxx"
-#include "../entity/components/skills.hxx"
+
+#include "game/config.hxx"
+#include "scene/tile.hxx"
+
+class Entity;
+class EventManager;
+class World;
+
+class ConfigUpdatedEvent;
+class MouseDownEvent;
 
 class SceneXray : public IXray {
 public:
-    SceneXray(EventManager* events);
+    explicit SceneXray(World* world, EventManager* events);
 
     void update() override;
 private:
-    void entity_panel(std::optional<u64> entity_id);
+    void entity_panel(std::optional<Id> entity_id);
     void entity_glyph(Entity* entity);
 
     struct TileWindowData {
@@ -29,7 +34,9 @@ private:
     bool on_mouse_down(MouseDownEvent& e);
     bool on_config_updated(ConfigUpdatedEvent& e);
 
-    Config _config;
+    Config config_;
+
+    World* world_ = nullptr;
 };
 
 #endif

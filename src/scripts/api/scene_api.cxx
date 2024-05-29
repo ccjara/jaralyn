@@ -1,4 +1,9 @@
 #include "scene_api.hxx"
+#include "world/entity_reader.hxx"
+
+SceneApi::SceneApi(IEntityReader* entity_reader) : entity_reader_(entity_reader) {
+    assert(entity_reader_);
+}
 
 void SceneApi::on_register(Script* script) {
     luabridge::getGlobalNamespace(*script)
@@ -12,7 +17,7 @@ void SceneApi::on_register(Script* script) {
 }
 
 const char* SceneApi::entity_name(u64 id) const {
-    Entity* entity = Scene::get_entity_by_id(id);
+    Entity* entity = entity_reader_->entity(id);
     if (!entity) {
         return nullptr;
     }
@@ -20,7 +25,7 @@ const char* SceneApi::entity_name(u64 id) const {
 }
 
 u64 SceneApi::player_id() const {
-    Entity* player = Scene::player();
+    Entity* player = entity_reader_->player();
     if (!player) {
         return null_id;
     }
@@ -28,9 +33,9 @@ u64 SceneApi::player_id() const {
 }
 
 const char* SceneApi::player_name() const {
-    u64 id = player_id();
-    if (id == null_id) {
+    Entity* player = entity_reader_->player();
+    if (!player) {
         return nullptr;
     }
-    return entity_name(id);
+    return player->name.c_str();
 }

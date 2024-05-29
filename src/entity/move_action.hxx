@@ -3,25 +3,27 @@
 
 #include "action.hxx"
 
+class IEntityReader;
+class ITileReader;
+
 /**
  * @brief Action representing the movement of an entity.
  *
  * Action may fail due to blockages, being movement impaired, etc.
  */
-struct MoveAction : public Action {
-    explicit MoveAction(Vec2<i32> destination);
+class MoveAction : public Action {
+public:
+    explicit MoveAction(IEntityReader* entity_reader, ITileReader* tile_reader);
 
-    bool perform() final override;
-
-    u32 base_cost() const override;
+    ActionResult perform() override;
 
     /**
      * @brief Destination this entity will arrive at if the action succeeds.
      */
     Vec2<i32> destination;
-
-    // TODO: scriptable / configurable
-    const static inline u32 BASE_COST = 100;
+private:
+    IEntityReader* entity_reader_ = nullptr;
+    ITileReader* tile_reader_ = nullptr;
 };
 
 #endif

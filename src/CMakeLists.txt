@@ -1,3 +1,5 @@
+include_directories(${PROJECT_SOURCE_DIR}/src) 
+
 add_executable(
     jaralyn
     "../deps/imgui/imgui.cpp"
@@ -21,11 +23,13 @@ add_executable(
 
     "engine/service_locator.hxx"
 
-    "entity/action.hxx"
+    "entity/action.cxx"
     "entity/action_creator.hxx"
     "entity/action_event.hxx"
     "entity/action_processor.hxx"
     "entity/action_queue.cxx"
+    "entity/action_result.hxx"
+    "entity/action_type.hxx"
     "entity/archetype.hxx"
     "entity/catalog.cxx"
     "entity/components/behavior.cxx"
@@ -40,6 +44,7 @@ add_executable(
     "entity/entity_event.hxx"
     "entity/fov.cxx"
     "entity/move_action.cxx"
+    "entity/null_action.hxx"
 
     "events/event_manager.cxx"
 
@@ -100,8 +105,12 @@ add_executable(
     "ui/ui_tree.cxx"
     "ui/ui_window.cxx"
 
-    "world/entity_provider.hxx"
+    "world/entity_reader.hxx"
+    "world/entity_writer.hxx"
+    "world/player_controller.hxx"
+    "world/tile_reader.hxx"
     "world/world.cxx"
+    "world/game_player_controller.cxx"
 
     "xray/log_xray.cxx"
     "xray/scene_xray.cxx"

@@ -1,37 +1,39 @@
 #include "move_action.hxx"
-#include "../scene/scene.hxx"
 #include "components/skills.hxx"
+#include "scene/tile.hxx"
+#include "entity/entity.hxx"
+#include "world/tile_reader.hxx"
 
-MoveAction::MoveAction(Vec2<i32> destination) :
-    destination { destination } {
+MoveAction::MoveAction(IEntityReader* entity_reader, ITileReader* tile_reader) :
+    entity_reader_(entity_reader),
+    tile_reader_(tile_reader) {
+    assert(entity_reader_);
+    assert(tile_reader_);
+    type_ = ActionType::Move;
 }
 
-u32 MoveAction::base_cost() const {
-    return BASE_COST;
-}
-
-bool MoveAction::perform() {
-    if (!entity) {
-        return false;
+ActionResult MoveAction::perform() {
+    if (!entity_) {
+        return ActionResult::Failure;
     }
-    const Tile* dest_tile = Scene::tiles().at(destination);
+    const Tile* dest_tile = tile_reader_->tile(destination);
 
     if (dest_tile == nullptr) {
-        return false;
+        return ActionResult::Failure;
     }
 
     if (dest_tile->solid) {
-        return false;
+        return ActionResult::Failure;
     }
 
     if (dest_tile->type == TileType::Water) {
-        Skills* skills = entity->component<Skills>();
+        Skills* skills = entity_->component<Skills>();
         if (skills) {
             skills->increase_progress(SkillId::Swim, 1);
         }
     }
 
-    entity->position = destination;
+    entity_->position = destination;
 
-    return true;
+    return ActionResult::Failure;
 }

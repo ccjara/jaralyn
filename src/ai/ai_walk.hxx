@@ -4,7 +4,7 @@
 #include "generic_ai_node.hxx"
 
 class IActionCreator;
-class IEntityProvider;
+class IEntityReader;
 
 enum class WalkTargetType {
     Random,
@@ -13,7 +13,7 @@ enum class WalkTargetType {
 
 class AiWalk : public GenericAiNode<AiWalk> {
 public:
-    explicit AiWalk(IActionCreator* action_creator, IEntityProvider* entity_provider);
+    explicit AiWalk(IActionCreator* action_creator, IEntityReader* entity_reader);
 
     void clear() override;
 
@@ -30,7 +30,7 @@ public:
     void walk_around();
 private:
     IActionCreator* action_creator_ = nullptr;
-    IEntityProvider* entity_provider_ = nullptr;
+    IEntityReader* entity_reader_ = nullptr;
 
     static constexpr const char* default_target_key = "walk_target";
 

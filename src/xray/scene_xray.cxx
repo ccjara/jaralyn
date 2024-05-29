@@ -4,15 +4,21 @@
 #include "../entity/components/skills.hxx"
 #include "../entity/components/render.hxx"
 #include "../scene/tile_builder.hxx"
+#include "../input/input.hxx"
+#include "../scene/scene.hxx"
+#include "../gfx/renderer.hxx"
+#include "../entity/components/skills.hxx"
+#include "world/world.hxx"
 
-SceneXray::SceneXray(EventManager* events) {
+SceneXray::SceneXray(World* world, EventManager* events) : world_(world) {
+    assert(world_);
     assert(events);
     events->on<MouseDownEvent>(this, &SceneXray::on_mouse_down, 9000);
     events->on<ConfigUpdatedEvent>(this, &SceneXray::on_config_updated, 9000);
 }
 
 bool SceneXray::on_config_updated(ConfigUpdatedEvent& e) {
-    _config = e.next;
+    config_ = e.next;
     return false;
 }
 
@@ -31,16 +37,15 @@ bool SceneXray::on_mouse_down(MouseDownEvent& e) {
     }
     const auto mp = Input::mouse_position();
     const Vec2<u32> tpos = {
-        mp.x / (_config.glyph_size.x * _config.scaling),
-        mp.y / (_config.glyph_size.y * _config.scaling)
+        mp.x / (config_.glyph_size.x * config_.scaling),
+        mp.y / (config_.glyph_size.y * config_.scaling)
     };
-    if (!Scene::tiles().at(tpos)) {
+    if (!world_->tiles().at(tpos)) {
         return false;
     }
     auto w = TileBuilder::for_type(type_to_place);
     w.revealed = true;
-    Scene::tiles().put(w, tpos);
-    const auto player_id = Scene::player_id();
+    world_->tiles().put(w, tpos);
     return true;
 }
 
@@ -56,7 +61,7 @@ void SceneXray::entity_window() {
     ImGui::Begin("Entities");
 
     if (ImGui::BeginCombo("Entity", combo_label.c_str())) {
-        for (auto& entity : Scene::read_entities()) {
+        for (auto& entity : world_->entities()) {
             const auto& entity_name_str = entity->name.c_str();
             const bool is_selected = entity_id.has_value() && entity_id.value() == entity->id;
             if (ImGui::Selectable(entity_name_str, is_selected)) {
@@ -111,14 +116,14 @@ void SceneXray::entity_panel(std::optional<u64> entity_id) {
     if (!entity_id.has_value()) {
         return;
     }
-    Entity* entity = Scene::get_entity_by_id(entity_id.value());
+    Entity* entity = world_->entity(entity_id.value());
     if (entity == nullptr) {
         return;
     }
     entity_glyph(entity);
 
     i32 position_raw[2] = { entity->position.x, entity->position.y };
-    bool is_player = Scene::player() == entity;
+    bool is_player = world_->player() == entity;
 
     ImGui::Text("Id: %lx", entity->id);
     if (ImGui::Checkbox("Player", &is_player)) {
