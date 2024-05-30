@@ -1,10 +1,20 @@
-#include "catalog_api.hxx"
-#include "../../engine/service_locator.hxx"
+#include "scripts/api/catalog_api.hxx"
+#include "ai/ai_closest_entity.hxx"
+#include "ai/ai_selector.hxx"
+#include "ai/ai_walk.hxx"
+#include "catalog/catalog.hxx"
+#include "component/render.hxx"
+#include "component/behavior.hxx"
+#include "component/vision/vision.hxx"
+#include "entity/archetype.hxx"
 
 class IActionCreator;
 class IEntityReader;
 
-CatalogApi::CatalogApi(ServiceLocator* services) : services_(services) {
+CatalogApi::CatalogApi(Catalog* catalog, ServiceLocator* services) : 
+    catalog_(catalog),
+    services_(services) {
+    assert(catalog_);
     assert(services_);
 }
 
@@ -35,7 +45,7 @@ void CatalogApi::on_register(Script* script) {
 }
 
 void CatalogApi::clear_archetypes() {
-    Catalog::clear_archetypes();
+    catalog_->clear_archetypes();
 }
 
 void CatalogApi::create_archetype(luabridge::LuaRef ref) {
@@ -47,7 +57,7 @@ void CatalogApi::create_archetype(luabridge::LuaRef ref) {
         Log::error("Archetype specification has no name");
         return;
     }
-    auto archetype = Catalog::create_archetype(ref["name"].cast<const char*>());
+    auto archetype = catalog_->create_archetype(ref["name"].cast<const char*>());
     if (!archetype) {
         return;
     }
@@ -95,7 +105,7 @@ void CatalogApi::create_archetype(luabridge::LuaRef ref) {
                     return add_behavior_component(*archetype, component_ref);
                 }
                 case ComponentType::Vision: {
-                    auto component_ptr = new Vision();
+                    auto component_ptr = new Vision(services_->get<ITileReader>());
 
                     const auto vision_radius_ref = component_ref["radius"];
                     i32 radius = 1;

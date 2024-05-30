@@ -1,5 +1,4 @@
 #include "scripting.hxx"
-#include "../events/event_manager.hxx"
 
 void Scripting::init(EventManager* events) {
     assert(events);

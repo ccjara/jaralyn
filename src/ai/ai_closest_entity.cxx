@@ -1,8 +1,8 @@
-#include "ai_closest_entity.hxx"
-#include "../entity/entity.hxx"
-#include "../entity/action.hxx"
-#include "../entity/components/vision.hxx"
-#include "world/entity_reader.hxx"
+#include "ai/ai_closest_entity.hxx"
+#include "action/action.hxx"
+#include "entity/entity.hxx"
+#include "component/vision/vision.hxx"
+#include "entity/entity_reader.hxx"
 
 AiClosestEntity::AiClosestEntity(IEntityReader* entity_reader) : entity_reader_(entity_reader) {
     assert(entity_reader_);

@@ -1,7 +1,7 @@
 #ifndef JARALYN_ACTOR_HXX
 #define JARALYN_ACTOR_HXX
 
-#include "components/component.hxx"
+#include "component/component.hxx"
 
 class Entity {
 public:

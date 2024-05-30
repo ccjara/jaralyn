@@ -1,9 +1,8 @@
-#include "ai_walk.hxx"
-#include "../entity/entity.hxx"
-#include "../entity/action_creator.hxx"
-#include "../entity/move_action.hxx"
-#include "../world/entity_reader.hxx"
-#include "entity/move_action.hxx"
+#include "ai/ai_walk.hxx"
+#include "action/action_creator.hxx"
+#include "action/move_action.hxx"
+#include "entity/entity.hxx"
+#include "entity/entity_reader.hxx"
 
 AiWalk::AiWalk(IActionCreator* action_creator, IEntityReader* entity_reader) : 
     action_creator_(action_creator), 

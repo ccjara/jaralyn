@@ -1,7 +1,7 @@
 #ifndef JARALYN_AI_SELECTOR_HXX
 #define JARALYN_AI_SELECTOR_HXX
 
-#include "generic_ai_node.hxx"
+#include "ai/generic_ai_node.hxx"
 
 /**
  * @brief Composite selector node implementation using prioritized nodes

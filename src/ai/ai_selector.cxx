@@ -1,4 +1,4 @@
-#include "ai_selector.hxx"
+#include "ai/ai_selector.hxx"
 
 AiSelector& AiSelector::operator=(AiSelector other) {
     swap(*this, other);

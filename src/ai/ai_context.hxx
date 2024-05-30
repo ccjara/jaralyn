@@ -1,7 +1,7 @@
 #ifndef JARALYN_AI_CONTEXT_HXX
 #define JARALYN_AI_CONTEXT_HXX
 
-#include "blackboard.hxx"
+#include "ai/blackboard.hxx"
 
 class Entity;
 

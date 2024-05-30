@@ -67,6 +67,8 @@ namespace fs = std::filesystem;
 
 #include "gfx/color.hxx"
 
-#include "engine/service_locator.hxx"
+#include "framework/event_manager.hxx"
+#include "framework/service_locator.hxx"
+#include "framework/grid.hxx"
 
 #endif

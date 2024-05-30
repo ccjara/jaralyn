@@ -2,7 +2,6 @@
 #define JARALYN_SCENE_API_HXX
 
 #include "lua_api.hxx"
-#include "../../scene/scene.hxx"
 
 class IEntityReader;
 

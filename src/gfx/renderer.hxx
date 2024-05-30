@@ -3,10 +3,10 @@
 
 #include "display.hxx"
 #include "text_shader.hxx"
-#include "../game/platform_event.hxx"
-#include "../game/window.hxx"
+#include "platform/platform_event.hxx"
 #include "gfx_event.hxx"
 
+class Platform;
 class EventManager;
 
 /**
@@ -16,7 +16,7 @@ class Renderer {
 public:
     Renderer() = delete;
 
-    static void init(EventManager* events);
+    static void init(Platform* platform, EventManager* events);
     static void shutdown();
 
     /**
@@ -98,6 +98,7 @@ private:
     static inline std::array<Display, 2> layers_;
 
     static inline EventManager* events_ = nullptr;
+    static inline Platform* platform_ = nullptr;
 };
 
 #endif

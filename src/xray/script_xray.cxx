@@ -1,5 +1,4 @@
-#include "script_xray.hxx"
-#include "../events/event_manager.hxx"
+#include "xray/script_xray.hxx"
 
 ScriptXray::ScriptXray(EventManager* events) {
     assert(events);

@@ -1,7 +1,7 @@
 #ifndef JARALYN_AI_SEQUENCE_HXX
 #define JARALYN_AI_SEQUENCE_HXX
 
-#include "generic_ai_node.hxx"
+#include "ai/generic_ai_node.hxx"
 
 /**
  * @brief Composite sequence node implementation using prioritized nodes

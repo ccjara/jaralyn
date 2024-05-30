@@ -1,7 +1,6 @@
 #ifndef JARALYN_DISPLAY_HXX
 #define JARALYN_DISPLAY_HXX
 
-#include "../grid.hxx"
 #include "text.hxx"
 
 struct TextState {

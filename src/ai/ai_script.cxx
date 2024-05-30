@@ -1,4 +1,4 @@
-#include "ai_script.hxx"
+#include "ai/ai_script.hxx"
 
 void AiScript::clear() {
     // TODO: script invocation

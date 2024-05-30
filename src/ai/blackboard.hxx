@@ -1,5 +1,5 @@
-#ifndef __JARALYN_BLACKBOARD_HXX__
-#define __JARALYN_BLACKBOARD_HXX__
+#ifndef JARALYN_BLACKBOARD_HXX
+#define JARALYN_BLACKBOARD_HXX
 
 class Blackboard {
 public:

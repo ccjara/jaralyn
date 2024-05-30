@@ -1,8 +1,9 @@
 #include "xray.hxx"
-#include "../events/event_manager.hxx"
 
-void Xray::init(EventManager* events, SDL_GLContext context) {
+void Xray::init(EventManager* events, SDL_Window* sdl_window, SDL_GLContext context) {
     assert(events);
+    assert(sdl_window);
+    sdl_window_ = sdl_window;
     imgui_context_ = ImGui::CreateContext();
     if (!imgui_context_) {
         Log::error("Could not create imgui context");
@@ -14,7 +15,7 @@ void Xray::init(EventManager* events, SDL_GLContext context) {
     events->on<KeyDownEvent>(&Xray::on_key_down, 10000);
     events->on<KeyUpEvent>(&Xray::on_key_up, 10000);
 
-    ImGui_ImplSDL2_InitForOpenGL(Window::handle(), context);
+    ImGui_ImplSDL2_InitForOpenGL(sdl_window_, context);
     ImGui_ImplOpenGL3_Init();
 
     ImGuiIO& io = ImGui::GetIO();
@@ -59,7 +60,7 @@ bool Xray::on_post_render(PostRenderEvent&) {
         return false;
     }
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(Window::handle());
+    ImGui_ImplSDL2_NewFrame(sdl_window_);
     ImGui::NewFrame();
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();

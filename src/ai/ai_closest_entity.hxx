@@ -1,7 +1,7 @@
-#ifndef __JARALYN_AI_CLOSEST_ENTITY_HXX__
-#define __JARALYN_AI_CLOSEST_ENTITY_HXX__
+#ifndef JARALYN_AI_CLOSEST_ENTITY_HXX
+#define JARALYN_AI_CLOSEST_ENTITY_HXX
 
-#include "generic_ai_node.hxx"
+#include "ai/generic_ai_node.hxx"
 
 class IEntityReader;
 

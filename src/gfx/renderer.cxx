@@ -1,5 +1,6 @@
-#include "renderer.hxx"
-#include "../events/event_manager.hxx"
+#include "gfx/renderer.hxx"
+#include "platform/platform.hxx"
+#include "platform/window.hxx"
 
 void Renderer::shutdown() {
     if (vao) {
@@ -14,20 +15,20 @@ void Renderer::shutdown() {
     }
 }
 
-void Renderer::init(EventManager* events) {
+void Renderer::init(Platform* platform, EventManager* events) {
     assert(events);
+    assert(platform);
+
+    platform_ = platform;
     events_ = events;
     events_->on<ResizeEvent>(&Renderer::on_resize);
     events_->on<ConfigUpdatedEvent>(&Renderer::on_config_updated);
 
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
-    gl_context_ = SDL_GL_CreateContext(Window::handle());
+    gl_context_ = SDL_GL_CreateContext(platform->sdl_window());
 
     if (gl_context_ == nullptr) {
-        Log::error("Could not initialize opengl");
+        const char *x = SDL_GetError();
+        Log::error("Could not initialize opengl {}", x);
         std::abort();
     }
     SDL_GL_SetSwapInterval(1);
@@ -52,7 +53,7 @@ void Renderer::init(EventManager* events) {
 
     text_shader_ = std::make_unique<TextShader>();
 
-    set_viewport(Window::size());
+    set_viewport(platform->window()->size());
 
     configure(Config());
 }
@@ -86,7 +87,7 @@ void Renderer::render() {
 
     events_->trigger<PostRenderEvent>();
 
-    SDL_GL_SwapWindow(Window::handle());
+    SDL_GL_SwapWindow(platform_->sdl_window());
 }
 
 void Renderer::set_viewport(Vec2<u32> size) {
@@ -136,7 +137,7 @@ bool Renderer::on_config_updated(ConfigUpdatedEvent& e) {
 
 void Renderer::adjust_display() {
     // calculate resolution
-    const auto scaled_size { Window::size() / cfg_.scaling };
+    const auto scaled_size { platform_->window()->size() / cfg_.scaling };
     // calculate how many cells will fit on the screen given that resolution
     const Vec2<u32> display_size {
         scaled_size.x / cfg_.glyph_size.x,

@@ -1,4 +1,4 @@
-#include "ai_sequence.hxx"
+#include "ai/ai_sequence.hxx"
 
 AiSequence& AiSequence::operator=(AiSequence other) {
     swap(*this, other);

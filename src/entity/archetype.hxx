@@ -1,7 +1,7 @@
 #ifndef JARALYN_ARCHETYPE_HXX
 #define JARALYN_ARCHETYPE_HXX
 
-#include "components/component.hxx"
+#include "component/component.hxx"
 
 /**
  * @brief Represents a template to create Entities of one 'kind'

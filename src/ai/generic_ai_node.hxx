@@ -1,7 +1,7 @@
 #ifndef JARALYN_GENERIC_AI_NODE_HXX
 #define JARALYN_GENERIC_AI_NODE_HXX
 
-#include "ai_node.hxx"
+#include "ai/ai_node.hxx"
 
 template<typename Derived>
 class GenericAiNode : public AiNode {

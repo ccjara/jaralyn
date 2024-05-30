@@ -3,20 +3,20 @@
 
 #include "xray_interface.hxx"
 
-#include "game/config.hxx"
-#include "scene/tile.hxx"
+#include "config/config.hxx"
+#include "tile/tile.hxx"
 
 class Entity;
 class EventManager;
-class World;
+class EntityManager;
+class TileManager;
 
 class ConfigUpdatedEvent;
 class MouseDownEvent;
 
 class SceneXray : public IXray {
 public:
-    explicit SceneXray(World* world, EventManager* events);
-
+    explicit SceneXray(EntityManager* entity_manager, TileManager* tile_manager, EventManager* events);
     void update() override;
 private:
     void entity_panel(std::optional<Id> entity_id);
@@ -36,7 +36,9 @@ private:
 
     Config config_;
 
-    World* world_ = nullptr;
+    EntityManager* entity_manager_;
+    TileManager* tile_manager_;
+    EventManager* events_;
 };
 
 #endif

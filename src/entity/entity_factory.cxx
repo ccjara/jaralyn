@@ -1,4 +1,6 @@
-#include "entity_factory.hxx"
+#include "entity/entity_factory.hxx"
+#include "entity/entity.hxx"
+#include "entity/archetype.hxx"
 
 std::unique_ptr<Entity> EntityFactory::create(const Archetype& archetype) {
     auto entity = std::make_unique<Entity>();

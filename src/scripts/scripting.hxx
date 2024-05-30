@@ -1,13 +1,13 @@
 #ifndef JARALYN_SCRIPT_SYSTEM_HXX
 #define JARALYN_SCRIPT_SYSTEM_HXX
 
-#include "../game/platform_event.hxx"
-#include "../input/input_event.hxx"
-#include "api/lua_api.hxx"
-#include "callback_store.hxx"
-#include "script_event.hxx"
-#include "script_util.hxx"
-#include "script.hxx"
+#include "platform/platform_event.hxx"
+#include "input/input_event.hxx"
+#include "scripts/api/lua_api.hxx"
+#include "scripts/callback_store.hxx"
+#include "scripts/script_event.hxx"
+#include "scripts/script_util.hxx"
+#include "scripts/script.hxx"
 
 class EventManager;
 

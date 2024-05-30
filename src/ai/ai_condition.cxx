@@ -1,4 +1,4 @@
-#include "ai_condition.hxx"
+#include "ai/ai_condition.hxx"
 
 AiCondition::AiCondition(ConditionFn condition) : condition_(std::move(condition)) {
 }

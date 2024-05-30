@@ -1,4 +1,4 @@
-#include "entity.hxx"
+#include "entity/entity.hxx"
 
 Entity::Entity() : id(next_id_++) {
 }

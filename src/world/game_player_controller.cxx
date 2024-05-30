@@ -1,10 +1,9 @@
-#include "world/entity_reader.hxx"
 #include "world/game_player_controller.hxx"
-#include "events/event_manager.hxx"
-#include "input/input_event.hxx"
+#include "action/action_creator.hxx"
+#include "action/move_action.hxx"
 #include "entity/entity.hxx"
-#include "entity/action_creator.hxx"
-#include "entity/move_action.hxx"
+#include "entity/entity_reader.hxx"
+#include "input/input_event.hxx"
 
 GamePlayerController::GamePlayerController(
     IEntityReader* entity_reader,

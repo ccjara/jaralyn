@@ -1,7 +1,7 @@
-#ifndef __JARALYN_AI_CONDITION_HXX__
-#define __JARALYN_AI_CONDITION_HXX__
+#ifndef JARALYN_AI_CONDITION_HXX
+#define JARALYN_AI_CONDITION_HXX
 
-#include "generic_ai_node.hxx"
+#include "ai/generic_ai_node.hxx"
 
 /**
  * @brief Condition node which runs a bool function to determine its state

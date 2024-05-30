@@ -1,11 +1,11 @@
 #ifndef JARALYN_XRAY_HXX
 #define JARALYN_XRAY_HXX
 
-#include "../gfx/gfx_event.hxx"
-#include "../game/window.hxx"
-#include "../input/input_event.hxx"
-#include "xray_interface.hxx"
-#include "xray_event.hxx"
+#include "gfx/gfx_event.hxx"
+#include "platform/window.hxx"
+#include "input/input_event.hxx"
+#include "xray/xray_interface.hxx"
+#include "xray/xray_event.hxx"
 
 class EventManager;
 
@@ -21,7 +21,7 @@ public:
         xrays_.emplace_back(new XrayClass(std::forward<XrayArgs>(xray_args)...));
     }
 
-    static void init(EventManager *events, SDL_GLContext context);
+    static void init(EventManager *events, SDL_Window* sdl_window, SDL_GLContext context);
     static void shutdown();
 private:
     /**
@@ -36,6 +36,7 @@ private:
     static bool on_key_up(KeyUpEvent& e);
 
     static inline ImGuiContext* imgui_context_ = nullptr;
+    static inline SDL_Window* sdl_window_ = nullptr;
 
     static inline std::vector<std::unique_ptr<IXray>> xrays_;
 };

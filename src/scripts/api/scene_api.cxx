@@ -1,5 +1,6 @@
 #include "scene_api.hxx"
-#include "world/entity_reader.hxx"
+#include "entity/entity.hxx"
+#include "entity/entity_reader.hxx"
 
 SceneApi::SceneApi(IEntityReader* entity_reader) : entity_reader_(entity_reader) {
     assert(entity_reader_);

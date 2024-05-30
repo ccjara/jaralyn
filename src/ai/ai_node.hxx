@@ -1,7 +1,7 @@
 #ifndef JARALYN_AI_NODE_HXX
 #define JARALYN_AI_NODE_HXX
 
-#include "ai_context.hxx"
+#include "ai/ai_context.hxx"
 
 enum class AiNodeState {
     Ready,

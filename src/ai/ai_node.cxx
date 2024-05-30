@@ -1,4 +1,4 @@
-#include "ai_node.hxx"
+#include "ai/ai_node.hxx"
 
 AiNodeState AiNode::mod_state(AiNodeState s) {
     state_ = s;
