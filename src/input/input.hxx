@@ -1,42 +1,60 @@
 #ifndef JARALYN_INPUT_HXX
 #define JARALYN_INPUT_HXX
 
-#include "mouse_state.hxx"
-#include "keyboard_state.hxx"
+#include "input/mouse_state.hxx"
+#include "input/keyboard_state.hxx"
+#include "input/input_reader.hxx"
 
 /**
- * @brief Readonly input state provider
+ * @brief Input state provder
  */
-class Input {
-    friend class Platform;
+class Input : public IInputReader {
 public:
+    explicit Input(EventManager* events);
+
     /**
      * @brief Returns the current mouse position as a tuple
      */
-    static Vec2<u32> mouse_position();
+    Vec2<u32> mouse_position() override;
 
     /**
      * @brief Returns the current x coordinate of the mouse cursor
      */
-    static u32 mouse_x();
+    u32 mouse_x() const override;
 
     /**
      * @brief Returns the current y coordinate of the mouse cursor
      */
-    static u32 mouse_y();
+    u32 mouse_y() const override;
 
     /**
      * @brief Returns true if the given mouse button is currently pressed
      */
-    static bool is_mouse_pressed(MouseButton button);
+    bool is_mouse_pressed(MouseButton button) const override;
 
     /**
      * @brief Returns true if the given keyboard key is currently pressed
      */
-    static bool is_key_pressed(Key key);
+    bool is_key_pressed(Key key) const override;
+
+    /**
+     * @brief Sets the mouse position (absolute)
+     */
+    void set_mouse_position(Vec2<i32> pos);
+
+    /**
+     * @brief Updates the state of the given button
+     */
+    void set_mouse_button_pressed(MouseButton button, bool pressed);
+
+    /**
+     * @brief Updates the state of the given key
+     */
+    void set_key_pressed(Key key, bool pressed);
 private:
-    static inline MouseState mouse_;
-    static inline KeyboardState keyboard_;
+    EventManager* events_ = nullptr;
+    MouseState mouse_;
+    KeyboardState keyboard_;
 };
 
 #endif

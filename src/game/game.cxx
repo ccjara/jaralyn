@@ -6,7 +6,8 @@ void Game::init() {
     events_ = std::make_unique<EventManager>();
     config_manager_ = std::make_unique<ConfigManager>(events_.get());
     services_ = std::make_unique<ServiceLocator>();
-    platform_ = std::make_unique<Platform>(events_.get());
+    input_ = std::make_unique<Input>(events_.get());
+    platform_ = std::make_unique<Platform>(events_.get(), input_.get());
     platform_->initialize();
 
     world_ = std::make_unique<World>();
@@ -15,17 +16,20 @@ void Game::init() {
     action_queue_ = std::make_unique<ActionQueue>(events_.get(), services_.get());
     catalog_ = std::make_unique<Catalog>();
 
-    services_->provide(config_manager_.get());
-    services_->provide(events_.get());
-    services_->provide(world_.get());
+    services_->provide<ConfigManager>(config_manager_.get());
+    services_->provide<EventManager>(events_.get());
+    services_->provide<World>(world_.get());
     services_->provide<IEntityReader>(entity_manager_.get());
     services_->provide<IEntityWriter>(entity_manager_.get());
+    services_->provide<EntityManager>(entity_manager_.get());
+    services_->provide<TileManager>(tile_manager_.get());
     services_->provide<ITileReader>(tile_manager_.get());
+    services_->provide<ITileWriter>(tile_manager_.get());
     services_->provide<Catalog>(catalog_.get());
-
-    services_->provide(action_queue_.get());
+    services_->provide<ActionQueue>(action_queue_.get());
     services_->provide<IActionCreator>(action_queue_.get());
     services_->provide<IActionProcessor>(action_queue_.get());
+    services_->provide<IInputReader>(input_.get());
 
     Renderer::init(events_.get());
     Renderer::set_viewport(platform_->window_size());
@@ -38,7 +42,7 @@ void Game::init() {
     // xray / engine ui
     Xray::init(events_.get());
     Xray::add<LogXray>();
-    Xray::add<SceneXray>(entity_manager_.get(), tile_manager_.get(), events_.get());
+    Xray::add<SceneXray>(entity_manager_.get(), tile_manager_.get(), events_.get(), input_.get());
     Xray::add<ScriptXray>(events_.get());
     Xray::add<UiXray>();
 

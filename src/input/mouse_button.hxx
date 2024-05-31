@@ -7,6 +7,6 @@ enum class MouseButton {
     Right = SDL_BUTTON_RIGHT,
 };
 
-constexpr u32 MOUSE_BUTTON_COUNT { 3U };
+constexpr u32 MOUSE_BUTTON_COUNT = 3U;
 
 #endif

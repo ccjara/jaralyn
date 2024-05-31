@@ -9,13 +9,20 @@
 class Entity;
 class EntityManager;
 class TileManager;
+class IInputReader;
 
 class ConfigUpdatedEvent;
 class MouseDownEvent;
 
 class SceneXray : public IXray {
 public:
-    explicit SceneXray(EntityManager* entity_manager, TileManager* tile_manager, EventManager* events);
+    explicit SceneXray(
+        EntityManager* entity_manager,
+        TileManager* tile_manager,
+        EventManager* events,
+        IInputReader* input
+    );
+    
     void update() override;
 private:
     void entity_panel(std::optional<Id> entity_id);
@@ -35,9 +42,10 @@ private:
 
     Config config_;
 
-    EntityManager* entity_manager_;
-    TileManager* tile_manager_;
-    EventManager* events_;
+    EntityManager* entity_manager_ = nullptr;
+    TileManager* tile_manager_ = nullptr;
+    EventManager* events_ = nullptr;
+    IInputReader* input_ = nullptr;
 };
 
 #endif

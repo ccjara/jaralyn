@@ -1,4 +1,4 @@
-#include "mouse_state.hxx"
+#include "input/mouse_state.hxx"
 
 MouseState::MouseState() {
     std::fill(button_state_.begin(), button_state_.end(), false);

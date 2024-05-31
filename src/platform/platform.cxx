@@ -3,8 +3,9 @@
 #include "input/input.hxx"
 #include "input/input_event.hxx"
 
-Platform::Platform(EventManager* events) : events_(events) {
+Platform::Platform(EventManager* events, Input *input) : events_(events), input_(input) {
     assert(events_);
+    assert(input_);
 }
 
 void Platform::initialize() {
@@ -111,7 +112,7 @@ bool Platform::process_events() {
         switch (e.type) {
             case SDL_EventType::SDL_QUIT:
                 return false;
-            case SDL_EventType::SDL_WINDOWEVENT: {
+            case SDL_EventType::SDL_WINDOWEVENT:
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
                     events_->trigger<ResizeEvent>(Vec2<i32> {
                         static_cast<i32> (e.window.data1),
@@ -119,37 +120,21 @@ bool Platform::process_events() {
                     });
                 }
                 break;
-            }
-            case SDL_EventType::SDL_KEYDOWN: {
-                const Key key { static_cast<Key>(e.key.keysym.sym) };
-                Input::keyboard_.key_down(key);
-                events_->trigger<KeyDownEvent>(key);
+            case SDL_EventType::SDL_KEYDOWN:
+                input_->set_key_pressed(static_cast<Key>(e.key.keysym.sym), true);
                 break;
-            }
-            case SDL_EventType::SDL_KEYUP: {
-                const auto key { static_cast<Key>(e.key.keysym.sym) };
-                Input::keyboard_.key_up(key);
-                events_->trigger<KeyUpEvent>(key);
+            case SDL_EventType::SDL_KEYUP:
+                input_->set_key_pressed(static_cast<Key>(e.key.keysym.sym), false);
                 break;
-            }
-            case SDL_EventType::SDL_MOUSEBUTTONDOWN: {
-                const auto button { static_cast<MouseButton>(e.button.button) };
-                Input::mouse_.mouse_down(button);
-                events_->trigger<MouseDownEvent>(button);
+            case SDL_EventType::SDL_MOUSEBUTTONDOWN:
+                input_->set_mouse_button_pressed(static_cast<MouseButton>(e.button.button), true);
                 break;
-            }
-            case SDL_EventType::SDL_MOUSEBUTTONUP: {
-                const auto button { static_cast<MouseButton>(e.button.button) };
-                Input::mouse_.mouse_up(button);
-                events_->trigger<MouseUpEvent>(button);
+            case SDL_EventType::SDL_MOUSEBUTTONUP:
+                input_->set_mouse_button_pressed(static_cast<MouseButton>(e.button.button), false);
                 break;
-            }
-            case SDL_EventType::SDL_MOUSEMOTION: {
-                const Vec2<i32> pos { e.motion.x, e.motion.y };
-                Input::mouse_.move(pos);
-                events_->trigger<MouseMoveEvent>(pos);
+            case SDL_EventType::SDL_MOUSEMOTION:
+                input_->set_mouse_position({ e.motion.x, e.motion.y });
                 break;
-            }
         }
     }
     return true;

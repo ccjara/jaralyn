@@ -1,7 +1,7 @@
 #ifndef JARALYN_MOUSE_STATE_HXX
 #define JARALYN_MOUSE_STATE_HXX
 
-#include "mouse_button.hxx"
+#include "input/mouse_button.hxx"
 
 /**
  * @brief Buffers the mouse state

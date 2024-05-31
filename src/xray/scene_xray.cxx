@@ -4,6 +4,7 @@
 #include "component/skills.hxx"
 #include "component/render.hxx"
 #include "input/input.hxx"
+#include "input/input_event.hxx"
 #include "gfx/renderer.hxx"
 #include "component/skills.hxx"
 #include "entity/entity_manager.hxx"
@@ -13,12 +14,15 @@
 SceneXray::SceneXray(
     EntityManager* entity_manager,
     TileManager* tile_manager,
-    EventManager* events
+    EventManager* events,
+    IInputReader* input
 ) : entity_manager_(entity_manager), 
     tile_manager_(tile_manager),
-    events_(events) {
+    events_(events),
+    input_(input) {
     assert(entity_manager_);
     assert(tile_manager_);
+    assert(input_);
     assert(events);
 
     events_->on<MouseDownEvent>(this, &SceneXray::on_mouse_down, 9000);
@@ -36,14 +40,14 @@ bool SceneXray::on_mouse_down(MouseDownEvent& e) {
     }
 
     TileType type_to_place;
-    if (Input::is_mouse_pressed(MouseButton::Left)) {
+    if (input_->is_mouse_pressed(MouseButton::Left)) {
         type_to_place = tile_window_data_.lmb_type;
-    } else if (Input::is_mouse_pressed(MouseButton::Right)) {
+    } else if (input_->is_mouse_pressed(MouseButton::Right)) {
         type_to_place = tile_window_data_.rmb_type;
     } else {
         return false;
     }
-    const auto mp = Input::mouse_position();
+    const auto mp = input_->mouse_position();
     const Vec2<u32> tpos = {
         mp.x / (config_.glyph_size.x * config_.scaling),
         mp.y / (config_.glyph_size.y * config_.scaling)

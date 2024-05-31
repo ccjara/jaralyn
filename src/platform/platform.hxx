@@ -1,9 +1,11 @@
 #ifndef JARALYN_PLATFORM_HXX
 #define JARALYN_PLATFORM_HXX
 
+class Input;
+
 class Platform {
 public:
-    explicit Platform(EventManager* events);
+    explicit Platform(EventManager* events, Input* input);
 
     /**
      * @brief Initializes the platform (SDL, OpenGL, ImGui, etc.)
@@ -48,6 +50,7 @@ private:
     SDL_Window* sdl_window_ = nullptr;
     SDL_GLContext gl_context_ = nullptr;
     ImGuiContext* imgui_context_ = nullptr;
+    Input* input_ = nullptr;
 };
 
 

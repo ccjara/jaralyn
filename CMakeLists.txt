@@ -25,6 +25,7 @@ include_directories(${LUA_INCLUDE_DIR})
 include_directories("${CMAKE_SOURCE_DIR}/deps")
 
 add_subdirectory(src)
+add_subdirectory(test)
 
 # https://chromium.googlesource.com/external/github.com/google/crc32c/+/refs/tags/1.0.5/CMakeLists.txt
 

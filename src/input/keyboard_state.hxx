@@ -1,7 +1,7 @@
 #ifndef JARALYN_KEYBOARD_STATE_HXX
 #define JARALYN_KEYBOARD_STATE_HXX
 
-#include "key.hxx"
+#include "input/key.hxx"
 
 class KeyboardState {
 public:

@@ -1,7 +1,6 @@
-include_directories(${PROJECT_SOURCE_DIR}/src) 
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
-add_executable(
-    jaralyn
+set(DEPS 
     "../deps/imgui/imgui.cpp"
     "../deps/imgui/imgui_demo.cpp"
     "../deps/imgui/imgui_draw.cpp"
@@ -9,7 +8,9 @@ add_executable(
     "../deps/imgui/imgui_impl_opengl3.cpp"
     "../deps/imgui/imgui_tables.cpp"
     "../deps/imgui/imgui_widgets.cpp"
+)
 
+set(COMMON_SOURCES
     "action/action.cxx"
     "action/action_creator.hxx"
     "action/action_event.hxx"
@@ -53,11 +54,11 @@ add_executable(
     "entity/entity_reader.hxx"
     "entity/entity_writer.hxx"
 
+    "framework/event_type.hxx"
     "framework/event_manager.cxx"
     "framework/service_locator.hxx"
     "framework/grid.hxx"
-
-    "game/game.cxx"
+    "framework/usings.hxx"
 
     "gfx/color.hxx"
     "gfx/display_cell.hxx"
@@ -73,14 +74,13 @@ add_executable(
 
     "input/input.cxx"
     "input/input_event.hxx"
+    "input/input_reader.hxx"
     "input/key.hxx"
     "input/keyboard_state.cxx"
     "input/mouse_button.hxx"
     "input/mouse_state.cxx"
 
     "log/log.cxx"
-
-    "main.cxx"
 
     "math/bresenham.hxx"
     "math/rect.hxx"
@@ -130,10 +130,23 @@ add_executable(
     "xray/xray_style.hxx"
 )
 
-target_link_libraries(jaralyn ${LUA_LIBRARIES})
-target_link_libraries(jaralyn SDL2::SDL2)
-target_link_libraries(jaralyn ${OPENGL_LIBRARIES})
-target_link_libraries(jaralyn GLEW::GLEW)
+set(SOURCES ${DEPS} ${COMMON_SOURCES})
+
+set(LIBRARIES
+    SDL2::SDL2
+    ${OPENGL_LIBRARIES}
+    ${LUA_LIBRARIES}
+    GLEW::GLEW
+)
+
+add_library(jarastatic STATIC ${SOURCES})
+target_precompile_headers(jarastatic PRIVATE stdafx.hxx)
+
+target_link_libraries(jarastatic ${LIBRARIES})
+
+add_executable(jaralyn "game/game.cxx" "main.cxx")
+
+target_link_libraries(jaralyn PRIVATE jarastatic)
 
 target_precompile_headers(jaralyn PRIVATE stdafx.hxx)
 

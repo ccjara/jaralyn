@@ -57,6 +57,7 @@ private:
     std::unique_ptr<TileManager> tile_manager_ = nullptr;
     std::unique_ptr<Catalog> catalog_ = nullptr;
     std::unique_ptr<Platform> platform_ = nullptr;
+    std::unique_ptr<Input> input_ = nullptr;
 };
 
 #endif

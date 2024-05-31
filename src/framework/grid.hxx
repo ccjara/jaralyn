@@ -148,12 +148,6 @@ public:
     template<typename cel, typename location_type>
     constexpr void put(cel&& c, location_type location) {
         if (!in_bounds(location)) {
-            const auto coord { ensure_coordinates(location) };
-
-            Log::error(
-                "Placement at {}, {}, not within bounds ({}, {})",
-                coord.x, coord.y, dimensions_.x, dimensions_.y
-            );
             return;
         }
         cells_[ensure_index(location)] = std::forward<cel>(c);

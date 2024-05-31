@@ -1,8 +1,15 @@
 #ifndef JARALYN_EVENT_MANAGER_HXX
 #define JARALYN_EVENT_MANAGER_HXX
 
+enum class EventType;
+
 template<typename T>
 concept MethodInvocable = std::is_member_function_pointer<T>::value;
+
+template<typename T>
+concept EventLike = requires {
+    { T::event_type } -> std::convertible_to<EventType>;
+};
 
 class EventManager {
 public:
@@ -14,9 +21,9 @@ public:
      *
      * The higher the priority the earlier the handler will be called.
      */
-    template<typename E, typename Fn>
+    template<EventLike E, typename Fn>
     void on(Fn callable, i32 priority = 0) {
-        EventPartition<E>& partition = event_partition_of<E>();
+        EventPartition<E>& partition = get_or_create_partition<E>();
         partition.add_callable(callable, priority);
     }
 
@@ -28,9 +35,9 @@ public:
      *
      * The higher the priority the earlier the handler will be called.
      */
-    template<typename E, typename Inst, MethodInvocable Fn>
+    template<EventLike E, typename Inst, MethodInvocable Fn>
     void on(Inst* instance, Fn method, i32 priority = 0) {
-        EventPartition<E>& partition = event_partition_of<E>();
+        EventPartition<E>& partition = get_or_create_partition<E>();
         partition.add_callable(
             [instance, method](E& event) -> bool {
                 return (instance->*method)(event);
@@ -47,10 +54,10 @@ public:
      *
      * Short-circuits if any handler returned `true`.
      */
-    template<typename E, typename... Args>
+    template<EventLike E, typename... Args>
     void trigger(Args&& ...args) {
         E event(std::forward<Args>(args)...);
-        EventPartition<E>& partition = event_partition_of<E>();
+        EventPartition<E>& partition = get_or_create_partition<E>();
         for (auto& handler : partition.event_handlers) {
             if (handler.callable(event)) {
                 break;
@@ -63,9 +70,7 @@ public:
      */
     void clear();
 private:
-    using PartitionIndex = u32;
-
-    template<typename E>
+    template<EventLike E>
     struct EventHandler {
         std::function<bool(E&)> callable;
         i32 priority = 0;
@@ -79,9 +84,9 @@ private:
     struct BaseEventPartition {
     };
 
-    template<typename E>
+    template<EventLike E>
     struct EventPartition : BaseEventPartition {
-        explicit EventPartition(PartitionIndex event_id) : event_id(event_id) {
+        explicit EventPartition(EventType event_type) : event_type(event_type) {
         }
 
         template<typename Callable>
@@ -97,34 +102,20 @@ private:
             );
         }
 
-        PartitionIndex event_id;
+        EventType event_type;
         std::vector<EventHandler<E>> event_handlers;
     };
 
-    template<typename E>
-    PartitionIndex get_or_create_partition_index() {
-        static PartitionIndex index = create_partition<E>(); // invoked once per `E`
-        return index;
+    template<EventLike E>
+    EventPartition<E>& get_or_create_partition() {
+        EventType type = E::event_type;
+        if (partitions_.find(type) == partitions_.end()) {
+            partitions_[type] = std::make_unique<EventPartition<E>>(type);
+        }
+        return *static_cast<EventPartition<E>*>(partitions_[type].get());
     }
 
-    template<typename E>
-    PartitionIndex create_partition() {
-        const auto index = next_partition_index_++;
-        partitions_.emplace_back(new EventPartition<E>(index));
-        return index;
-    }
-
-    template<typename E>
-    EventPartition<E>& event_partition_of() {
-        const auto partitionIndex = get_or_create_partition_index<E>();
-        // if this fails there is a linkage problem (probably multiple defined partitions_)
-        // due to anonymous namespaces + static linkage or similar
-        assert(partitions_.size() > partitionIndex);
-        return *static_cast<EventPartition<E>*>(partitions_[partitionIndex].get());
-    }
-
-    std::vector<std::unique_ptr<BaseEventPartition>> partitions_;
-    PartitionIndex next_partition_index_ = 0U;
+    std::unordered_map<EventType, std::unique_ptr<BaseEventPartition>> partitions_;
 };
 
 #endif

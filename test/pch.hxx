@@ -1,5 +1,5 @@
-#ifndef JARALYN_STDAFX_HXX
-#define JARALYN_STDAFX_HXX
+#ifndef JARATEST_PCH_HXX
+#define JARATEST_PCH_HXX
 
 #define NOMINMAX
 
@@ -25,7 +25,6 @@
 #include <unordered_set>
 #include <type_traits>
 
-#define FMT_HEADER_ONLY
 #include <fmt/format.h>
 #include <fmt/chrono.h>
 
@@ -34,30 +33,21 @@
 #include <lua5.3/lua.hpp>
 #include <LuaBridge/LuaBridge.h>
 
-#define IMGUI_IMPL_OPENGL_LOADER_GLEW
-
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_opengl3.h"
-
-#define SDL_MAIN_HANDLED
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
 #include "framework/usings.hxx"
-
-#include "log/log.hxx"
-#include "lang/translator.hxx"
-
 #include "math/vec2.hxx"
 #include "math/bresenham.hxx"
 #include "math/rect.hxx"
-
 #include "gfx/color.hxx"
-
 #include "framework/event_manager.hxx"
 #include "framework/service_locator.hxx"
 #include "framework/grid.hxx"
+
 
 #endif
