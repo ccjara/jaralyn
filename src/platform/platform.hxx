@@ -1,36 +1,53 @@
 #ifndef JARALYN_PLATFORM_HXX
 #define JARALYN_PLATFORM_HXX
 
-class IPlatformApi;
-class Window;
-
-/*
-TODO: renderer doesnt need to know anything about platform initialization (i.e. SDL Init, GL Context Init)
-      this should be handled by the platform class.
-
-TODO: Swapping is also a platform concern, so the renderer should not be responsible for this either.
-      Swap windows after rendering in the game loop
-
-TODO: Remove Window class and SIMPLIFY platform.
-
-*/
-
 class Platform {
 public:
-    explicit Platform(std::unique_ptr<IPlatformApi>&& api);
+    explicit Platform(EventManager* events);
 
-    std::shared_ptr<Window> create_window(const std::string& title, Vec2<i32> size);
-    std::shared_ptr<Window> window();
+    /**
+     * @brief Initializes the platform (SDL, OpenGL, ImGui, etc.)
+     */
+    void initialize();
 
-    // TODO: remove after renderer abstraction
-    SDL_Window* sdl_window();
+    /**
+     * @brief Prepares a new loop iteration. Must be called at the beginning of the main loop.
+     * 
+     * @return false if the application should exit.
+     */
+    bool prepare();
 
+    /**
+     * @brief Presents the current frame. 
+     * 
+     * Must be called at the end of the loop after all drawing operations.
+     */
+    void present();
+
+    /**
+     * @brief Shuts down the platform.
+     */
     void shutdown();
 
+    Vec2<u32> window_size() const;
+
     ~Platform();
+
+    Platform(const Platform&) = delete;
+    Platform& operator=(const Platform&) = delete;
+    Platform(Platform&&) = delete;
+    Platform& operator=(Platform&&) = delete;
 private:
-    std::shared_ptr<Window> window_ = nullptr;
-    std::unique_ptr<IPlatformApi> api_ = nullptr;
+    /**
+     * @brief Processes incoming OS events
+     */
+    bool process_events();
+
+    bool sdl_initialized_ = false;
+    EventManager* events_ = nullptr;
+    SDL_Window* sdl_window_ = nullptr;
+    SDL_GLContext gl_context_ = nullptr;
+    ImGuiContext* imgui_context_ = nullptr;
 };
 
 

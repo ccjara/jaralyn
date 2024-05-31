@@ -5,7 +5,6 @@
 
 class IEntityReader;
 class IActionCreator;
-class EventManager;
 class KeyDownEvent;
 
 class GamePlayerController : public IPlayerController {

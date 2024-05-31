@@ -8,7 +8,7 @@
  * @brief Readonly input state provider
  */
 class Input {
-    friend class Game;
+    friend class Platform;
 public:
     /**
      * @brief Returns the current mouse position as a tuple

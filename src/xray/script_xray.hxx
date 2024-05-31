@@ -5,8 +5,6 @@
 #include "xray_style.hxx"
 #include "../scripts/scripting.hxx"
 
-class EventManager;
-
 class ScriptXray : public IXray {
 public:
     ScriptXray(EventManager* events);

@@ -9,8 +9,6 @@
 #include "scripts/script_util.hxx"
 #include "scripts/script.hxx"
 
-class EventManager;
-
 using lua_event_type = u32;
 namespace lua_event { // FIXME: luabridge does not support enums
     static lua_event_type inventory_view { 1000 };

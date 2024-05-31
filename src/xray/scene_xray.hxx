@@ -7,7 +7,6 @@
 #include "tile/tile.hxx"
 
 class Entity;
-class EventManager;
 class EntityManager;
 class TileManager;
 

@@ -42,6 +42,8 @@ add_executable(
     "component/vision/fov.cxx"
 
     "config/config.hxx"
+    "config/config_event.hxx"
+    "config/config_manager.cxx"
 
     "entity/archetype.hxx"
     "entity/entity.cxx"
@@ -86,14 +88,11 @@ add_executable(
 
     "lang/translator.cxx"
 
-    "platform/platform_api.cxx"
     "platform/platform_event.hxx"
     "platform/platform.cxx"
-    "platform/window.cxx"
-    "platform/window_handle.hxx"
-    "platform/window_handle_impl.hxx"
 
     "scripts/api/catalog_api.cxx"
+    "scripts/api/config_api.cxx"
     "scripts/api/log_api.cxx"
     "scripts/api/lua_api.hxx"
     "scripts/api/scene_api.cxx"

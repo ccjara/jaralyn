@@ -8,6 +8,7 @@
 #include "component/skills.hxx"
 #include "entity/entity_manager.hxx"
 #include "tile/tile_manager.hxx"
+#include "config/config_event.hxx"
 
 SceneXray::SceneXray(
     EntityManager* entity_manager,

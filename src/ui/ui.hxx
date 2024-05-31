@@ -7,7 +7,6 @@
 #include "ui_window.hxx"
 #include "ui_text.hxx"
 
-class EventManager;
 class Display;
 
 class Ui {

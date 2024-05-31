@@ -1,6 +1,6 @@
 #include "gfx/renderer.hxx"
-#include "platform/platform.hxx"
-#include "platform/window.hxx"
+#include "config/config_event.hxx"
+#include "platform/platform_event.hxx"
 
 void Renderer::shutdown() {
     if (vao) {
@@ -9,34 +9,14 @@ void Renderer::shutdown() {
     if (vbo) {
         glDeleteBuffers(1, &vbo);
     }
-    if (gl_context_ != nullptr) {
-        SDL_GL_DeleteContext(gl_context_);
-        gl_context_ = nullptr;
-    }
 }
 
-void Renderer::init(Platform* platform, EventManager* events) {
+void Renderer::init(EventManager* events) {
     assert(events);
-    assert(platform);
 
-    platform_ = platform;
     events_ = events;
     events_->on<ResizeEvent>(&Renderer::on_resize);
     events_->on<ConfigUpdatedEvent>(&Renderer::on_config_updated);
-
-    gl_context_ = SDL_GL_CreateContext(platform->sdl_window());
-
-    if (gl_context_ == nullptr) {
-        const char *x = SDL_GetError();
-        Log::error("Could not initialize opengl {}", x);
-        std::abort();
-    }
-    SDL_GL_SetSwapInterval(1);
-
-    if (glewInit() != GLEW_OK) {
-        Log::error("Could not initialize glew");
-        std::abort();
-    }
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -52,8 +32,6 @@ void Renderer::init(Platform* platform, EventManager* events) {
     glEnableVertexAttribArray(1);
 
     text_shader_ = std::make_unique<TextShader>();
-
-    set_viewport(platform->window()->size());
 
     configure(Config());
 }
@@ -84,10 +62,6 @@ void Renderer::render() {
         }
         glDrawArrays(GL_POINTS, 0, layer.cell_count());
     }
-
-    events_->trigger<PostRenderEvent>();
-
-    SDL_GL_SwapWindow(platform_->sdl_window());
 }
 
 void Renderer::set_viewport(Vec2<u32> size) {
@@ -137,7 +111,7 @@ bool Renderer::on_config_updated(ConfigUpdatedEvent& e) {
 
 void Renderer::adjust_display() {
     // calculate resolution
-    const auto scaled_size { platform_->window()->size() / cfg_.scaling };
+    const auto scaled_size { view_port_ / cfg_.scaling };
     // calculate how many cells will fit on the screen given that resolution
     const Vec2<u32> display_size {
         scaled_size.x / cfg_.glyph_size.x,
@@ -150,10 +124,6 @@ void Renderer::adjust_display() {
 
     events_->trigger<DisplayResizedEvent>(display_size);
     Log::debug("Display resized to {}x{} cells", display_size.x, display_size.y);
-}
-
-SDL_GLContext Renderer::gl_context() {
-    return gl_context_;
 }
 
 std::array<float, 4> Renderer::calculate_glyph_uv(u32 glyph) {

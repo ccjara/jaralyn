@@ -2,12 +2,6 @@
 #define JARALYN_GFX_EVENT_HXX
 
 /**
- * @brief Triggered after rendering the frame but before swapping buffers
- */
-struct PostRenderEvent {
-};
-
-/**
  * @brief Triggered after the display has been resized
  *
  * The display is resized in the gfx system just after the low level event
