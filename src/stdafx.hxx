@@ -52,10 +52,13 @@
 #include <SDL2/SDL_opengl.h>
 
 #include "stb/stb_image.h"
+#include "stb/stb_perlin.h"
 
 #include "framework/usings.hxx"
 #include "framework/concepts.hxx"
 #include "framework/event.hxx"
+
+#include "instrumentation/profiler.hxx"
 
 #include "log/log.hxx"
 #include "lang/translator.hxx"
@@ -70,5 +73,8 @@
 #include "framework/events.hxx"
 #include "framework/service_locator.hxx"
 #include "framework/grid.hxx"
+
+#include "world/world_pos.hxx"
+#include "world/chunk_pos.hxx"
 
 #endif

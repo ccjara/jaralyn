@@ -17,28 +17,28 @@ GamePlayerController::GamePlayerController(
 }
 
 EventResult GamePlayerController::on_key_down(KeyDownEvent& e) {
-    Vec2<i32> position = { 0, 0 };
+    WorldPos position;
 
     if (e.key == Key::W) {
-        position.y = -1;
+        position.z = -1;
     } else if (e.key == Key::A) {
         position.x = -1;
     } else if (e.key == Key::S) {
-        position.y = 1;
+        position.z = 1;
     } else if (e.key == Key::D) {
         position.x = 1;
     } else if (e.key == Key::Q) {
         position.x = -1;
-        position.y = -1;
+        position.z = -1;
     } else if (e.key == Key::E) {
         position.x = 1;
-        position.y = -1;
+        position.z = -1;
     } else if (e.key == Key::Z || e.key == Key::Y) {
         position.x = -1;
-        position.y = 1;
+        position.z = 1;
     } else if (e.key == Key::C) {
         position.x = 1;
-        position.y = 1;
+        position.z = 1;
     } else {
         return EventResult::Continue;
     }
@@ -47,7 +47,7 @@ EventResult GamePlayerController::on_key_down(KeyDownEvent& e) {
     return EventResult::Halt;
 }
 
-bool GamePlayerController::move_relative(const Vec2<i32>& direction) {
+bool GamePlayerController::move_relative(const WorldPos& direction) {
     Entity* player = entity_reader_->player();
     if (!player) {
         return false;
@@ -61,6 +61,5 @@ bool GamePlayerController::move_relative(const Vec2<i32>& direction) {
 
     // start the next world tick
     events_->engine->trigger<PlayerActionCommitted>(move_action);
-
     return true;
 }

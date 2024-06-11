@@ -23,8 +23,8 @@ void Platform::initialize() {
         "NoEden",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        1600,
-        900,
+        1280,
+        720,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 

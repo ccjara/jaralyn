@@ -41,6 +41,7 @@ EventResult VisionManager::on_world_updated_post(const WorldUpdatedPostEvent&) {
 }
 
 void VisionManager::apply_fov() {
+    /* TODO
     for (auto& entity: entity_reader_->entities()) {
         auto vision = entity->component<Vision>();
         if (vision == nullptr) {
@@ -77,9 +78,11 @@ void VisionManager::apply_fov() {
             }
         }
     }
+    */
 }
 
 void VisionManager::update_fov() {
+    /* TODO
     for (auto& entity: entity_reader_->entities()) {
         auto vision = entity->component<Vision>();
         if (vision == nullptr) {
@@ -117,4 +120,5 @@ void VisionManager::update_fov() {
         }
         fov.update();
     }
+    */
 }

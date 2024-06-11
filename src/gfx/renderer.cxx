@@ -7,6 +7,9 @@ void Renderer::shutdown() {
     if (vbo) {
         glDeleteBuffers(1, &vbo);
     }
+
+    resize_sub_.unsubscribe();
+    config_updated_sub_.unsubscribe();
 }
 
 void Renderer::init(Events* events) {
@@ -42,24 +45,23 @@ void Renderer::render() {
     text_shader_->use();
 
     glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     for (auto& layer : layers_) {
         const auto byte_size { layer.byte_size() };
-        
+
         if (last_size_ == layer.byte_size()) {
-            auto data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-
-            std::memcpy(data, layer.data(), byte_size);
-
-            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, byte_size, layer.data());
         } else {
-            // glBindBuffer(GL_ARRAY_BUFFER, vbo); // not necessary - autobound by vao
             glBufferData(GL_ARRAY_BUFFER, byte_size, layer.data(), GL_DYNAMIC_DRAW);
 
             last_size_ = byte_size;
         }
         glDrawArrays(GL_POINTS, 0, layer.cell_count());
     }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
 void Renderer::set_viewport(Vec2<u32> size) {

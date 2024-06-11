@@ -18,7 +18,7 @@ public:
      *
      * The Entity can be further configured after creation.
      */
-    virtual Entity& create_entity(const Archetype& archetype) = 0;
+    virtual Entity& create_entity(const Archetype& archetype, const WorldPos& position) = 0;
 
     /**
      * @brief Set the player controlled entity

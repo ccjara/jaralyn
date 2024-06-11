@@ -22,8 +22,13 @@ void Game::init() {
         t_ = std::make_unique<Translator>(std::move(result.dictionary));
     }
     services_->provide<Translator>(t_.get());
-    entity_manager_ = std::make_unique<EntityManager>();
+    entity_manager_ = std::make_unique<EntityManager>(events_.get());
     tile_manager_ = std::make_unique<TileManager>();
+
+    chunk_generator_ = std::make_unique<ChunkGenerator>();
+    chunk_manager_ = std::make_unique<ChunkManager>(chunk_generator_.get(), events_.get());
+    tile_accessor_ = std::make_unique<TileAccessor>(chunk_manager_.get());
+
     action_queue_ = std::make_unique<ActionQueue>(events_.get(), services_.get());
     world_ = std::make_unique<World>(entity_manager_.get(), action_queue_.get(), events_.get());
     vision_manager_ = std::make_unique<VisionManager>(entity_manager_.get(), tile_manager_.get(), events_.get());
@@ -40,6 +45,7 @@ void Game::init() {
     services_->provide<IEntityWriter>(entity_manager_.get());
     services_->provide<EntityManager>(entity_manager_.get());
     services_->provide<TileManager>(tile_manager_.get());
+    services_->provide<TileAccessor>(tile_accessor_.get());
     services_->provide<ITileReader>(tile_manager_.get());
     services_->provide<ITileWriter>(tile_manager_.get());
     services_->provide<Catalog>(catalog_.get());
@@ -63,9 +69,10 @@ void Game::init() {
     // xray / engine ui
     Xray::init(events_.get());
     Xray::add<LogXray>();
-    Xray::add<SceneXray>(entity_manager_.get(), tile_manager_.get(), events_.get(), input_.get(), t_.get());
+    Xray::add<SceneXray>(chunk_manager_.get(), entity_manager_.get(), tile_manager_.get(), events_.get(), input_.get(), t_.get());
     Xray::add<ScriptXray>(scripting_.get(), events_.get());
     Xray::add<UiXray>();
+    Xray::add<PerfXray>();
 
     // scripting
     scripting_->add_api<LogApi>();
@@ -75,27 +82,32 @@ void Game::init() {
     scripting_->add_api<CatalogApi>(catalog_.get(), services_.get());
     scripting_->reload();
 
+    WorldSpecCreator world_spec_creator;
+
+    world_spec_ = world_spec_creator.create_world_spec(CreateWorldSpecOptions {
+        .seed = 0,
+        .chunks_x = 256,
+        .chunks_z = 256
+    });
+
+    events_->engine->trigger<WorldReadyEvent>(world_spec_.get());
+
     // post initialization experimentation
     {
         auto arch_troll = catalog_->archetype("TROLL");
         auto arch_human = catalog_->archetype("HUMAN");
         if (arch_troll) {
-            auto& troll = entity_manager_->create_entity(*arch_troll);
-            troll.position = { 3, 3 };
+            entity_manager_->create_entity(*arch_troll, WorldPos(3, 0, 3));
         } else {
             Log::warn("TROLL archetype not yet present");
         }
         if (arch_human) {
-            auto& dwarf = entity_manager_->create_entity(*arch_human);
-            dwarf.position = { 0, 1 };
-
-            entity_manager_->set_controlled_entity(&dwarf);
+            auto& human = entity_manager_->create_entity(*arch_human, WorldPos(1, 0, 1));
+            entity_manager_->set_controlled_entity(&human);
         } else {
             Log::warn("HUMAN archetype not yet present");
         }
     }
-
-    events_->engine->trigger<WorldReadyEvent>();
 }
 
 void Game::shutdown() {
@@ -103,7 +115,24 @@ void Game::shutdown() {
     Ui::shutdown();
     Renderer::shutdown();
 
+    catalog_.reset();
+    vision_manager_.reset();
+    world_.reset();
+    action_queue_.reset();
+    tile_accessor_.reset();
+    chunk_manager_.reset();
+    chunk_generator_.reset();
+    tile_manager_.reset();
+    entity_manager_.reset();
+    player_controller_.reset();
+
     scripting_.reset();
+    services_.reset();
+    input_.reset();
+    config_manager_.reset();
+    events_.reset();
+    game_events_.reset();
+    engine_events_.reset();
 
     platform_->shutdown();
 }
@@ -122,15 +151,40 @@ void Game::run() {
     init();
 
     while (true) {
+        Profiler::timer("Frame").start();
+
         if (!platform_->prepare()) {
             break;
         }
-
         Ui::update();
 
         // TODO: temporary code
+        Profiler::timer("Draw").start();
         auto& world_layer = Renderer::display();
-        const auto& last_tile_index { world_layer.cell_count() };
+
+        world_layer.reset();
+
+        i32 display_half_width = world_layer.dimensions().x / 2;
+        i32 display_half_height = world_layer.dimensions().y / 2;
+
+        const auto camera_pos = world_->get_camera().position;
+        const i32 left_bound = camera_pos.x - display_half_width;
+        const i32 right_bound = camera_pos.x + display_half_width;
+        const i32 top_bound = camera_pos.z - display_half_height;
+        const i32 bottom_bound = camera_pos.z + display_half_height;
+
+        for (i32 z = top_bound; z <= bottom_bound; ++z) {
+            for (i32 x = left_bound; x <= right_bound; ++x) {
+                Tile* tile = tile_accessor_->get_tile(WorldPos(x, camera_pos.y, z));
+                if (tile) {
+                    u32 screen_x = x - left_bound;
+                    u32 screen_z = z - top_bound;
+
+                    world_layer.put(tile->display_info, Vec2<u32>(screen_x, screen_z));
+                }
+            }
+        }
+        /*
         Grid<Tile>& tiles { tile_manager_->tiles() };
         const auto scene_dim { tiles.dimensions() };
         const auto display_dim { world_layer.dimensions() };
@@ -138,7 +192,6 @@ void Game::run() {
             std::min<u32>(scene_dim.x, display_dim.x),
             std::min<u32>(scene_dim.y, display_dim.y)
         );
-
         for (u32 y = 0; y < tile_render_dim.y; ++y) {
             for (u32 x = 0; x < tile_render_dim.x; ++x) {
                 const Vec2<u32> tile_pos { x, y };
@@ -157,13 +210,13 @@ void Game::run() {
                 }
             }
         }
-
+        */
         for (const auto& entity : entity_manager_->entities()) {
             if (!world_layer.in_bounds(entity->position)) {
                 continue;
             }
 
-            Render* render_component = entity->component<Render>();
+            auto render_component = entity->component<Render>();
             if (!render_component) {
                 continue;
             }
@@ -172,18 +225,29 @@ void Game::run() {
                 continue;
             }
 
-            const auto tile { tiles.at(entity->position) };
-            if (!tile || !tile->flags.test(TileFlags::FoV)) {
+            //const auto tile { tiles.at(entity->position) };
+            //if (!tile || !tile->flags.test(TileFlags::FoV)) {
+            //    continue;
+            //}
+
+            if (entity->position.y != camera_pos.y) {
                 continue;
             }
-            world_layer.put(DisplayCell(info.glyph, info.color), entity->position);
-        }
 
+            auto pos = entity->position - WorldPos(left_bound, 0, top_bound);
+
+            world_layer.put(DisplayCell(info.glyph, info.color), Vec2<u32>(pos.x, pos.z));
+        }
         Ui::draw();
+        Profiler::timer("Draw").stop();
+        Profiler::timer("Render").start();
         Renderer::render();
+        Profiler::timer("Render").stop();
+
         Xray::draw();
 
         platform_->present();
+        Profiler::timer("Frame").stop();
     }
 
     shutdown();

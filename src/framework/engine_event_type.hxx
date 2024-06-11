@@ -11,6 +11,7 @@ enum class EngineEventType {
     KeyUp,
     Resize,
     DisplayResized,
+    EntityCreated,
     ScriptReset,
     ScriptLoaded,
     ScriptEnvSetup,

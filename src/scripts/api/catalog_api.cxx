@@ -7,6 +7,7 @@
 #include "component/behavior.hxx"
 #include "component/vision/vision.hxx"
 #include "entity/archetype.hxx"
+#include "world/tile_accessor.hxx"
 
 class IActionCreator;
 class IEntityReader;

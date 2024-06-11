@@ -25,7 +25,7 @@ private:
      * @param direction Direction to move in
      * @return true if the action was successfully scheduled
      */
-    bool move_relative(const Vec2<i32>& direction);
+    bool move_relative(const WorldPos& direction);
 
     Events* events_ = nullptr;
     IEntityReader* entity_reader_ = nullptr;

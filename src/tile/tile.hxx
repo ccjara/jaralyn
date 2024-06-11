@@ -3,12 +3,12 @@
 
 #include "../gfx/display_cell.hxx"
 
-enum class TileType {
+enum class TileType : unsigned char {
     Ground,
     Wall,
 };
 
-enum class MaterialType {
+enum class MaterialType : unsigned char {
     None,
     Stone,
     Wood,
@@ -16,7 +16,7 @@ enum class MaterialType {
     Water,
 };
 
-enum class MaterialState {
+enum class MaterialState : unsigned char {
     Void,
     Solid,
     Liquid,
@@ -53,7 +53,7 @@ struct Tile {
 
     std::bitset<8> flags;
     
-    DisplayCell display_info;
+    DisplayCell display_info; // needs to be moved out later and determined based on tile type etc.
 };
 
 #endif

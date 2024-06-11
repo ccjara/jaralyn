@@ -6,6 +6,8 @@
 
 class EntityManager : public IEntityReader, public IEntityWriter {
 public:
+    explicit EntityManager(Events* events);
+
     /**
      * @copydoc IEntityReader::entity
      */
@@ -39,7 +41,7 @@ public:
     /**
      * @copydoc IEntityWriter::create_entity
      */
-    Entity& create_entity(const Archetype& archetype) override;
+    Entity& create_entity(const Archetype& archetype, const WorldPos& position) override;
 
     /**
      * @copydoc IEntityWriter::set_controlled_entity
@@ -67,6 +69,8 @@ private:
      * @brief Entity currently controlled by the player
      */
     Entity* controlled_entity_ = nullptr;
+
+    Events* events_ = nullptr;
 };
 
 #endif

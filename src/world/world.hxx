@@ -2,11 +2,13 @@
 #define NOEDEN_WORLD_HXX
 
 #include "action/action_event.hxx"
+#include "world/camera_controller.hxx"
 
 class IEntityReader;
 class IPlayerController;
 class IActionProcessor;
 class Entity;
+struct Camera;
 
 class World {
 public:
@@ -19,6 +21,7 @@ public:
      */
     void bind_player_controller(IPlayerController* controller);
 
+    const Camera& get_camera() const;
 private:
     EventResult on_player_action_committed(const PlayerActionCommitted& e);
     Subscription<PlayerActionCommitted> player_action_committed_sub_;
@@ -31,6 +34,9 @@ private:
     Events* events_ = nullptr;
     IEntityReader* entity_reader_ = nullptr;
     IActionProcessor* action_processor_ = nullptr;
+
+    std::unique_ptr<Camera> camera_ = nullptr;
+    std::unique_ptr<CameraController> camera_controller_ = nullptr;
 };
 
 #endif

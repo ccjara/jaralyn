@@ -4,7 +4,7 @@
 #include "action/action.hxx"
 
 class IEntityReader;
-class ITileReader;
+class TileAccessor;
 
 /**
  * @brief Action representing the movement of an entity.
@@ -13,17 +13,17 @@ class ITileReader;
  */
 class MoveAction : public Action {
 public:
-    explicit MoveAction(IEntityReader* entity_reader, ITileReader* tile_reader);
+    explicit MoveAction(IEntityReader* entity_reader, TileAccessor* tile_accessor);
 
     ActionResult perform() override;
 
     /**
      * @brief Destination this entity will arrive at if the action succeeds.
      */
-    Vec2<i32> destination;
+    WorldPos destination;
 private:
     IEntityReader* entity_reader_ = nullptr;
-    ITileReader* tile_reader_ = nullptr;
+    TileAccessor* tile_accessor_ = nullptr;
 };
 
 #endif

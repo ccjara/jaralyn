@@ -17,6 +17,9 @@ void Ui::init(Events* events, Display* display) {
 void Ui::shutdown() {
     display_ = nullptr;
     ui_tree_.clear();
+
+    display_resized_sub_.unsubscribe();
+    script_reset_sub_.unsubscribe();
 }
 
 void Ui::update() {

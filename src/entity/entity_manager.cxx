@@ -1,7 +1,12 @@
 #include "entity/entity_manager.hxx"
 #include "entity/entity.hxx"
 #include "entity/entity_factory.hxx"
+#include "entity/entity_event.hxx"
 #include "entity/archetype.hxx"
+
+EntityManager::EntityManager(Events* events) : events_(events) {
+    assert(events_);
+}
 
 Entity* EntityManager::entity(Id id) {
     auto it = index_by_id_.find(id);
@@ -26,11 +31,16 @@ const EntityManager::EntityContainer& EntityManager::entities() const {
     return entities_;
 }
 
-Entity& EntityManager::create_entity(const Archetype& archetype) {
+Entity& EntityManager::create_entity(const Archetype& archetype, const WorldPos& position) {
     entities_.push_back(EntityFactory::create(archetype));
     auto& entity = entities_.back();
 
+    entity->position = position;
+
     index_by_id_[entity->id] = entities_.size() - 1;
+
+    events_->engine->trigger<EntityCreatedEvent>(entity.get());
+
     return *entity.get();
 }
 
@@ -65,6 +75,7 @@ ControlEntityResult EntityManager::set_controlled_entity(Entity* entity) {
         entity->on_player_attached();
     }
     controlled_entity_ = entity;
+    Log::debug("Entity {} is now controlled", entity ? entity->id : 0);
 
     return ControlEntityResult::Success;
 }

@@ -110,6 +110,10 @@ public:
         }
         return partition->handler_count();
     }
+
+    ~EventManager() {
+        clear();
+    }
 private:
     template<EventLike<EventType> Event>
     struct EventHandler {
@@ -227,9 +231,9 @@ public:
     inline void unsubscribe() {
         if (active()) {
             event_manager_->off(*this);
-            id_ = 0;
-            event_manager_ = nullptr;
         }
+        id_ = 0;
+        event_manager_ = nullptr;
     }
 
     inline bool active() const {

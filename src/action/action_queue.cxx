@@ -5,8 +5,7 @@
 #include "action/null_action.hxx"
 #include "entity/entity.hxx"
 #include "entity/entity_reader.hxx"
-#include "tile/tile_reader.hxx"
-#include "tile/tile.hxx"
+#include "world/tile_accessor.hxx"
 
 ActionQueue::ActionQueue(Events* events, ServiceLocator* services) :
     events_(events),
@@ -40,13 +39,14 @@ std::unique_ptr<Action> ActionQueue::instantiate_action(ActionType type) {
         case ActionType::None:
             return std::make_unique<NullAction>();
         case ActionType::Move:
-            return std::make_unique<MoveAction>(services_->get<IEntityReader>(), services_->get<ITileReader>());
+            return std::make_unique<MoveAction>(services_->get<IEntityReader>(), services_->get<TileAccessor>());
         default:
             return {};
     }
 }
 
 void ActionQueue::process_actions() {
+    Profiler::timer("ActionQueue").start();
     std::sort(
         actions_.begin(),
         actions_.end(),
@@ -73,6 +73,7 @@ void ActionQueue::process_actions() {
         entity->energy -= energy_needed;
     }
     actions_.clear();
+    Profiler::timer("ActionQueue").stop();
 
     events_->engine->trigger<ActionQueueProcessed>();
 }

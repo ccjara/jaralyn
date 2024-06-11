@@ -14,6 +14,11 @@ void Xray::init(Events* events) {
 
 void Xray::shutdown() {
     xrays_.clear();
+
+    mouse_down_sub_.unsubscribe();
+    mouse_up_sub_.unsubscribe();
+    key_down_sub_.unsubscribe();
+    key_up_sub_.unsubscribe();
 }
 
 EventResult Xray::on_mouse_down(MouseDownEvent &e) {

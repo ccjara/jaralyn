@@ -16,6 +16,7 @@
 #include "scripts/api/ui/ui_api.hxx"
 #include "scripts/api/log_api.hxx"
 #include "xray/log_xray.hxx"
+#include "xray/perf_xray.hxx"
 #include "xray/scene_xray.hxx"
 #include "xray/script_xray.hxx"
 #include "xray/ui_xray.hxx"
@@ -34,8 +35,15 @@
 #include "entity/entity_manager.hxx"
 #include "entity/archetype.hxx"
 #include "tile/tile_manager.hxx"
+#include "world/chunk.hxx"
+#include "world/chunk_generator.hxx"
+#include "world/chunk_manager.hxx"
+#include "world/tile_accessor.hxx"
 #include "world/world.hxx"
 #include "world/world_event.hxx"
+#include "world/world_spec.hxx"
+#include "world/world_spec_creator.hxx"
+#include "world/camera.hxx"
 
 class Game {
 public:
@@ -58,7 +66,6 @@ private:
      */
     void shutdown();
 
-
     std::unique_ptr<ConfigManager> config_manager_ = nullptr;
     std::unique_ptr<EventManager<GameEventType>> game_events_ = nullptr;
     std::unique_ptr<EventManager<EngineEventType>> engine_events_ = nullptr;
@@ -75,6 +82,10 @@ private:
     std::unique_ptr<Input> input_ = nullptr;
     std::unique_ptr<Translator> t_ = nullptr;
     std::unique_ptr<GamePlayerController> player_controller_ = nullptr;
+    std::unique_ptr<TileAccessor> tile_accessor_ = nullptr;
+    std::unique_ptr<ChunkGenerator> chunk_generator_ = nullptr;
+    std::unique_ptr<ChunkManager> chunk_manager_ = nullptr;
+    std::unique_ptr<WorldSpec> world_spec_ = nullptr;
 };
 
 #endif

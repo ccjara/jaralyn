@@ -9,6 +9,7 @@ set(DEPS
     "../deps/imgui/imgui_tables.cpp"
     "../deps/imgui/imgui_widgets.cpp"
     "../deps/stb/stb_image_implementation.cxx"
+    "../deps/stb/stb_perlin_implementation.cxx"
 )
 
 set(COMMON_SOURCES
@@ -62,6 +63,7 @@ set(COMMON_SOURCES
     "framework/event_manager.hxx"
     "framework/game_event_type.hxx"
     "framework/grid.hxx"
+    "framework/noise_generator.cxx"
     "framework/service_locator.hxx"
     "framework/usings.hxx"
 
@@ -84,6 +86,9 @@ set(COMMON_SOURCES
     "input/keyboard_state.cxx"
     "input/mouse_button.hxx"
     "input/mouse_state.cxx"
+
+    "instrumentation/perf_timer.cxx"
+    "instrumentation/profiler.cxx"
 
     "log/log.cxx"
 
@@ -126,12 +131,22 @@ set(COMMON_SOURCES
     "ui/ui_tree.cxx"
     "ui/ui_window.cxx"
 
+    "world/camera.cxx"
+    "world/camera_controller.cxx"
+    "world/chunk_generator.cxx"
+    "world/chunk_manager.cxx"
+    "world/chunk_pos.cxx"
     "world/game_player_controller.cxx"
     "world/player_controller.hxx"
+    "world/tile_accessor.cxx"
     "world/world.cxx"
     "world/world_event.hxx"
+    "world/world_spec_creator.cxx"
+    "world/world_pos.cxx"
+    "world/world_spec.cxx"
 
     "xray/log_xray.cxx"
+    "xray/perf_xray.cxx"
     "xray/scene_xray.cxx"
     "xray/script_xray.cxx"
     "xray/ui_xray.cxx"

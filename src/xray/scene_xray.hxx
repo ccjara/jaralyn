@@ -11,10 +11,12 @@ class Entity;
 class EntityManager;
 class TileManager;
 class IInputReader;
+class ChunkManager;
 
 class SceneXray : public IXray {
 public:
     explicit SceneXray(
+        ChunkManager* chunk_manager,
         EntityManager* entity_manager,
         TileManager* tile_manager,
         Events* events,
@@ -29,6 +31,7 @@ private:
 
     void entity_window();
     void tile_window();
+    void mapgen_window();
 
     EventResult on_mouse_down(const MouseDownEvent& e);
     Subscription<MouseDownEvent> mouse_down_sub_;
@@ -37,6 +40,7 @@ private:
 
     Config config_;
 
+    ChunkManager* chunk_manager_ = nullptr;
     EntityManager* entity_manager_ = nullptr;
     TileManager* tile_manager_ = nullptr;
     Events* events_ = nullptr;

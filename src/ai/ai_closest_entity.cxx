@@ -9,6 +9,9 @@ AiClosestEntity::AiClosestEntity(IEntityReader* entity_reader) : entity_reader_(
 }
 
 AiNodeState AiClosestEntity::visit(AiContext& context) {
+    return mod_state(AiNodeState::Failed);
+    /* TODO
+
     if (!context.entity) {
         return mod_state(AiNodeState::Failed);
     }
@@ -36,6 +39,7 @@ AiNodeState AiClosestEntity::visit(AiContext& context) {
 
     // no unit in range matching the filter found
     return mod_state(AiNodeState::Failed);
+    */
 }
 
 void AiClosestEntity::clear() {
