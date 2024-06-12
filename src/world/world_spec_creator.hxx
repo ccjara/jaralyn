@@ -18,6 +18,21 @@ struct CreateWorldSpecOptions {
      * @brief Height of the map in chunks
      */
     i32 chunks_z;
+
+    /**
+     * @brief Max elevation where vegetation is encountered
+     */
+    i32 max_vegetation;
+
+    /**
+     * @brief Max elevation where shorelines are encountered
+     */
+    i32 max_shoreline;
+
+    /**
+     * @brief Max elevation where seawater is encountered
+     */
+    i32 max_water;
 };
 
 class WorldSpecCreator {

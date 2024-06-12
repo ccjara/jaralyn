@@ -12,6 +12,7 @@ ChunkManager::ChunkManager(ChunkGenerator* chunk_generator, Events* events) :
 
     on_world_ready_sub_ = events_->engine->on<WorldReadyEvent>(this, &ChunkManager::on_world_ready);
     on_entity_created_sub_ = events_->engine->on<EntityCreatedEvent>(this, &ChunkManager::on_entity_created);
+    on_player_moved_sub_ = events_->engine->on<PlayerMovedEvent>(this, &ChunkManager::on_player_moved);
 }
 
 constexpr std::size_t ChunkManager::ChunkPosHasher::operator()(const ChunkPos& pos) const {
@@ -64,5 +65,34 @@ EventResult ChunkManager::on_world_ready(const WorldReadyEvent& e) {
 EventResult ChunkManager::on_entity_created(const EntityCreatedEvent& e) {
     Log::debug("Ensuring chunk for entity {} at {}", e.entity->name, e.entity->position.to_string());
     create_chunk(to_chunk_pos(e.entity->position));
+    return EventResult::Continue;
+}
+
+EventResult ChunkManager::on_player_moved(const PlayerMovedEvent& e) {
+    Log::debug("Player moved to {}", e.position.to_string());
+
+    // if too close to the edge of the current chunk, load the next chunk
+    constexpr i32 CHUNK_LOAD_DISTANCE = 8;
+
+    const auto current_chunk_pos = to_chunk_pos(e.position);
+    const auto local = WorldPos(
+        e.position.x % Chunk::CHUNK_SIDE_LENGTH,
+        e.position.y,
+        e.position.z % Chunk::CHUNK_SIDE_LENGTH
+    );
+
+    if (local.x < CHUNK_LOAD_DISTANCE && current_chunk_pos.x > 0) {
+        create_chunk(ChunkPos(current_chunk_pos.x - 1, current_chunk_pos.z));
+    } else if (local.x > Chunk::CHUNK_SIDE_LENGTH - CHUNK_LOAD_DISTANCE && current_chunk_pos.x < world_spec_->chunks_x() - 1) {
+        create_chunk(ChunkPos(current_chunk_pos.x + 1, current_chunk_pos.z));
+    }
+
+    if (local.z < CHUNK_LOAD_DISTANCE && current_chunk_pos.z > 0) {
+        create_chunk(ChunkPos(current_chunk_pos.x, current_chunk_pos.z - 1));
+    } else if (local.z > Chunk::CHUNK_SIDE_LENGTH - CHUNK_LOAD_DISTANCE && current_chunk_pos.z < world_spec_->chunks_z() - 1) {
+        create_chunk(ChunkPos(current_chunk_pos.x, current_chunk_pos.z + 1));
+    }
+
+    create_chunk(to_chunk_pos(e.position));
     return EventResult::Continue;
 }

@@ -1,12 +1,14 @@
 #include "action/move_action.hxx"
 #include "component/skills.hxx"
 #include "entity/entity.hxx"
+#include "entity/entity_event.hxx"
 #include "tile/tile.hxx"
 #include "world/tile_accessor.hxx"
 
-MoveAction::MoveAction(IEntityReader* entity_reader, TileAccessor* tile_accessor) :
+MoveAction::MoveAction(IEntityReader* entity_reader, TileAccessor* tile_accessor, Events* events) :
     entity_reader_(entity_reader),
-    tile_accessor_(tile_accessor) {
+    tile_accessor_(tile_accessor),
+    events_(events) {
     assert(entity_reader_);
     assert(tile_accessor_);
     type_ = ActionType::Move;
@@ -35,5 +37,9 @@ ActionResult MoveAction::perform() {
 
     entity_->position = destination;
 
-    return ActionResult::Failure;
+    if (entity_->player_attached_) {
+        events_->engine->trigger<PlayerMovedEvent>(entity_->position);
+    }
+
+    return ActionResult::Success;
 }

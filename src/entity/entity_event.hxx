@@ -5,6 +5,12 @@
 
 class Entity;
 
+struct PlayerMovedEvent : public Event<EngineEventType::PlayerMoved> {
+    WorldPos position;
+
+    explicit PlayerMovedEvent(const WorldPos& position) : position(position) {}
+};
+
 struct EntityCreatedEvent : public Event<EngineEventType::EntityCreated> {
     Entity* entity = nullptr;
 

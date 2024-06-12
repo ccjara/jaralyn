@@ -5,6 +5,7 @@
 
 class IEntityReader;
 class TileAccessor;
+struct Events;
 
 /**
  * @brief Action representing the movement of an entity.
@@ -13,7 +14,7 @@ class TileAccessor;
  */
 class MoveAction : public Action {
 public:
-    explicit MoveAction(IEntityReader* entity_reader, TileAccessor* tile_accessor);
+    explicit MoveAction(IEntityReader* entity_reader, TileAccessor* tile_accessor, Events* events);
 
     ActionResult perform() override;
 
@@ -22,6 +23,7 @@ public:
      */
     WorldPos destination;
 private:
+    Events* events_ = nullptr;
     IEntityReader* entity_reader_ = nullptr;
     TileAccessor* tile_accessor_ = nullptr;
 };

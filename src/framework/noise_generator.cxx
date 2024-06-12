@@ -13,30 +13,35 @@ void generate_noise(std::vector<float>& buffer, const GenerateNoiseOptions& opti
 
     for (i32 y = 0; y < options.height; ++y) {
         for (i32 x = 0; x < options.width; ++x) {
-            float noise = stb_perlin_fbm_noise3(
-                (float) x * options.frequency,
-                (float) y * options.frequency,
-                0,
-                options.lacunarity,
-                options.gain,
-                options.octaves
-            ) * options.amplitude;
+            float noise = 0.0f;
+            float frequency = options.frequency;
+            float amplitude = options.amplitude;
+            float global_x = static_cast<float>(x + options.offset_x) / options.width;
+            float global_y = static_cast<float>(y + options.offset_y) / options.height;
+
+            for (i32 octave = 0; octave < options.octaves; ++octave) {
+                noise += stb_perlin_noise3_seed(
+                    global_x * frequency,
+                    global_y * frequency,
+                    0, // z * frequency,
+                    0,
+                    0,
+                    0,
+                    (unsigned char) octave
+                ) * amplitude;
+
+                frequency *= options.lacunarity;
+                amplitude *= options.gain;
+            }
 
             noise = std::clamp(noise, -1.0f, 1.0f);
             noise = (noise + 1.0f) / 2.0f;
 
             if (options.use_gradient) {
-                float distance = sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+                float distance = std::sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
                 float normalizedDistance = distance / maxDistance;
-                float gradient = 1.0f - pow(normalizedDistance, options.gradient_falloff);
+                float gradient = 1.0f - std::pow(normalizedDistance, options.gradient_falloff);
                 noise *= gradient;
-            }
-
-            if (noise <= options.low_threshold) {
-                noise = 0;
-            }
-            if (noise >= options.high_threshold) {
-                noise = 1.0f;
             }
 
             buffer[(y * options.width + x)] = noise;

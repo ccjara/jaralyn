@@ -43,12 +43,14 @@ void Entity::on_after_actions() {
 }
 
 void Entity::on_player_attached() {
+    player_attached_ = true;
     for (auto& component : components_) {
         component->on_player_attached();
     }
 }
 
 void Entity::on_player_detached() {
+    player_attached_ = false;
     for (auto& component : components_) {
         component->on_player_detached();
     }

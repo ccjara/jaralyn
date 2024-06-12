@@ -39,7 +39,7 @@ std::unique_ptr<Action> ActionQueue::instantiate_action(ActionType type) {
         case ActionType::None:
             return std::make_unique<NullAction>();
         case ActionType::Move:
-            return std::make_unique<MoveAction>(services_->get<IEntityReader>(), services_->get<TileAccessor>());
+            return std::make_unique<MoveAction>(services_->get<IEntityReader>(), services_->get<TileAccessor>(), events_);
         default:
             return {};
     }

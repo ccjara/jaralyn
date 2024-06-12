@@ -17,6 +17,7 @@ enum class EngineEventType {
     ScriptEnvSetup,
     ActionQueueProcessed,
     PlayerActionCommitted,
+    PlayerMoved,
     WorldReady,
     WorldUpdatedPre,
     WorldUpdatedPost,

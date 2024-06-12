@@ -16,7 +16,12 @@ Tile* TileAccessor::get_tile(const WorldPos& position) {
         return nullptr;
     }
 
-    return &chunk->tiles[to_index(position)];
+    const auto index = to_local_index(position);
+    if (index > Chunk::MAX_INDEX) {
+        return nullptr;
+    }
+
+    return &chunk->tiles[index];
 }
 
 void TileAccessor::set_tile(const WorldPos& position, const Tile& tile) {
@@ -24,10 +29,14 @@ void TileAccessor::set_tile(const WorldPos& position, const Tile& tile) {
     if (!chunk) {
         return;
     }
-    chunk->tiles[to_index(position)] = tile;
+    chunk->tiles[to_local_index(position)] = tile;
 }
 
-size_t TileAccessor::to_index(const WorldPos& position) const {
+size_t TileAccessor::to_local_index(WorldPos position) const {
+    position.x %= Chunk::CHUNK_SIDE_LENGTH;
+    // position.y %= Chunk::CHUNK_DEPTH; // not needed with 2D chunks
+    position.z %= Chunk::CHUNK_SIDE_LENGTH;
+
     return
         position.y * Chunk::CHUNK_SIDE_LENGTH * Chunk::CHUNK_SIDE_LENGTH +
         position.z * Chunk::CHUNK_SIDE_LENGTH +

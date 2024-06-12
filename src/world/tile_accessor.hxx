@@ -10,10 +10,10 @@ public:
 
     Tile* get_tile(const WorldPos& position);
     void set_tile(const WorldPos& position, const Tile& tile);
+
+    size_t to_local_index(WorldPos position) const;
 private:
     ChunkManager* chunk_manager_ = nullptr;
-
-    size_t to_index(const WorldPos& position) const;
 };
 
 #endif

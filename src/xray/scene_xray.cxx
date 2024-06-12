@@ -9,22 +9,32 @@
 #include "tile/tile_manager.hxx"
 #include "framework/noise_generator.hxx"
 #include "world/chunk_manager.hxx"
+#include "world/chunk.hxx"
+#include "world/tile_accessor.hxx"
+#include "world/world_spec.hxx"
 
 SceneXray::SceneXray(
+    WorldSpec* world_spec,
     ChunkManager* chunk_manager,
     EntityManager* entity_manager,
+    TileAccessor* tile_accessor,
     TileManager* tile_manager,
     Events* events,
     IInputReader* input,
     Translator* translator
-) : chunk_manager_(chunk_manager),
+) :
+    world_spec_(world_spec),
+    chunk_manager_(chunk_manager),
     entity_manager_(entity_manager),
+    tile_accessor_(tile_accessor),
     tile_manager_(tile_manager),
     events_(events),
     input_(input),
     translator_(translator) {
+    assert(world_spec_);
     assert(chunk_manager_);
     assert(entity_manager_);
+    assert(tile_accessor_);
     assert(tile_manager_);
     assert(input_);
     assert(translator_);
@@ -142,7 +152,7 @@ void SceneXray::entity_panel(std::optional<u64> entity_id) {
     }
     entity_glyph(entity);
 
-    i32 position_raw[2] = { entity->position.x, entity->position.y };
+    i32 position_raw[3] = { entity->position.x, entity->position.y, entity->position.z };
     bool is_player = entity_manager_->player() == entity;
 
     ImGui::Text("Id: %lx", entity->id);
@@ -150,11 +160,10 @@ void SceneXray::entity_panel(std::optional<u64> entity_id) {
         entity_manager_->set_controlled_entity(is_player ? entity->id : null_id);
     }
     ImGui::PushItemWidth(ImGui::GetWindowWidth() / 4);
-    if (ImGui::InputInt2("Position", position_raw, ImGuiInputTextFlags_None)) {
-        position_raw[0] = std::min(std::max(position_raw[0], 0), 100);
-        position_raw[1] = std::min(std::max(position_raw[1], 0), 100);
+    if (ImGui::InputInt3("Position", position_raw, ImGuiInputTextFlags_None)) {
         entity->position.x = position_raw[0];
         entity->position.y = position_raw[1];
+        entity->position.z = position_raw[2];
     }
     if (ImGui::InputFloat("Speed", &entity->speed, ImGuiInputTextFlags_None)) {
         entity->speed = std::fmax(entity->speed, 0);
@@ -225,20 +234,7 @@ void SceneXray::mapgen_window() {
 
     static GLuint texture;
 
-    static GenerateNoiseOptions world_mask_options{
-        .frequency = 0.015f,
-        .amplitude = 1.0f,
-        .width = 256,
-        .height = 256,
-        .z = 0,
-        .lacunarity = 3.0f,
-        .gain = 0.517f,
-        .low_threshold = 0.517f,
-        .high_threshold = 0.517f,
-        .use_gradient = true,
-        .radius_mult = 1.0f,
-        .gradient_falloff = 5.0f
-    };
+    static GenerateNoiseOptions world_mask_options = world_spec_->height_map_options();
 
     static std::vector<float> height_map_noise_;
 
@@ -265,9 +261,6 @@ void SceneXray::mapgen_window() {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
-
-        world_mask_options.low_threshold = 0.0f;
-        world_mask_options.high_threshold = 1.0f;
 
         generate_noise(height_map, world_mask_options);
 
@@ -320,7 +313,7 @@ void SceneXray::mapgen_window() {
         init = true;
     }
 
-    if (ImGui::SliderFloat("Frequency", &world_mask_options.frequency, 0.01f, 1.0f)) {
+    if (ImGui::SliderFloat("Frequency", &world_mask_options.frequency, 0.1f, 10.0f)) {
         generate_map();
     }
     if (ImGui::SliderFloat("Amplitude", &world_mask_options.amplitude, 0.1f, 2.0f)) {
@@ -332,10 +325,10 @@ void SceneXray::mapgen_window() {
     if (ImGui::SliderFloat("Gain", &world_mask_options.gain, 0.0f, 10.0f)) {
         generate_map();
     }
-    if (ImGui::SliderFloat("Low Threshold", &world_mask_options.low_threshold, 0.0f, 1.0f)) {
+    if (ImGui::SliderInt("Offset-X", &world_mask_options.offset_x, 0.0f, 64.0f)) {
         generate_map();
     }
-    if (ImGui::SliderFloat("High Threshold", &world_mask_options.high_threshold, 0.0f, 1.0f)) {
+    if (ImGui::SliderInt("Offset-Y", &world_mask_options.offset_y, 0.0f, 64.0f)) {
         generate_map();
     }
     if (ImGui::SliderInt("Octaves", &world_mask_options.octaves, 0.0f, 10)) {
@@ -381,15 +374,24 @@ void SceneXray::mapgen_window() {
             i32 chunk_x = mouse_pos.x - image_pos.x;
             i32 chunk_z = mouse_pos.y - image_pos.y;
 
+            Log::debug("Clicked on chunk: ({}, {})", chunk_x, chunk_z);
+
             chunk_manager_->create_chunk({chunk_x, chunk_z});
 
             if (entity_manager_->player() != nullptr) {
-                entity_manager_->player()->position.x = chunk_x * 32;
-                entity_manager_->player()->position.z = chunk_z * 32;
+                entity_manager_->player()->position.x = chunk_x * Chunk::CHUNK_SIDE_LENGTH;
+                entity_manager_->player()->position.z = chunk_z * Chunk::CHUNK_SIDE_LENGTH;
             }
         }
 
         ImGui::PopStyleVar();
+    }
+
+    if (entity_manager_->player() != nullptr) {
+        auto p = entity_manager_->player()->position;
+        auto text = fmt::format("Player pos: ({}, {}, {}) - index {}", p.x, p.y, p.z, tile_accessor_->to_local_index(p));
+
+        ImGui::TextUnformatted(text.c_str());
     }
 
     ImGui::End();

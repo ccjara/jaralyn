@@ -40,8 +40,10 @@ private:
 
     Subscription<WorldReadyEvent> on_world_ready_sub_;
     Subscription<EntityCreatedEvent> on_entity_created_sub_;
+    Subscription<PlayerMovedEvent> on_player_moved_sub_;
     EventResult on_world_ready(const WorldReadyEvent& e);
     EventResult on_entity_created(const EntityCreatedEvent& e);
+    EventResult on_player_moved(const PlayerMovedEvent& e);
 };
 
 #endif

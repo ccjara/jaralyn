@@ -61,6 +61,17 @@ void Game::init() {
     );
     world_->bind_player_controller(player_controller_.get());
 
+    WorldSpecCreator world_spec_creator;
+
+    world_spec_ = world_spec_creator.create_world_spec(CreateWorldSpecOptions {
+        .seed = 0,
+        .chunks_x = 256,
+        .chunks_z = 256,
+        .max_vegetation = static_cast<i32>(0.8f * Chunk::CHUNK_DEPTH),
+        .max_shoreline = static_cast<i32>(0.45f * Chunk::CHUNK_DEPTH),
+        .max_water = static_cast<i32>(0.4f * Chunk::CHUNK_DEPTH)
+    });
+
     Renderer::init(events_.get());
     Renderer::set_viewport(platform_->window_size());
 
@@ -69,7 +80,7 @@ void Game::init() {
     // xray / engine ui
     Xray::init(events_.get());
     Xray::add<LogXray>();
-    Xray::add<SceneXray>(chunk_manager_.get(), entity_manager_.get(), tile_manager_.get(), events_.get(), input_.get(), t_.get());
+    Xray::add<SceneXray>(world_spec_.get(), chunk_manager_.get(), entity_manager_.get(), tile_accessor_.get(), tile_manager_.get(), events_.get(), input_.get(), t_.get());
     Xray::add<ScriptXray>(scripting_.get(), events_.get());
     Xray::add<UiXray>();
     Xray::add<PerfXray>();
@@ -81,14 +92,6 @@ void Game::init() {
     scripting_->add_api<UiApi>();
     scripting_->add_api<CatalogApi>(catalog_.get(), services_.get());
     scripting_->reload();
-
-    WorldSpecCreator world_spec_creator;
-
-    world_spec_ = world_spec_creator.create_world_spec(CreateWorldSpecOptions {
-        .seed = 0,
-        .chunks_x = 256,
-        .chunks_z = 256
-    });
 
     events_->engine->trigger<WorldReadyEvent>(world_spec_.get());
 
@@ -164,10 +167,10 @@ void Game::run() {
 
         world_layer.reset();
 
+        const auto camera_pos = world_->get_camera().position;
         i32 display_half_width = world_layer.dimensions().x / 2;
         i32 display_half_height = world_layer.dimensions().y / 2;
 
-        const auto camera_pos = world_->get_camera().position;
         const i32 left_bound = camera_pos.x - display_half_width;
         const i32 right_bound = camera_pos.x + display_half_width;
         const i32 top_bound = camera_pos.z - display_half_height;
@@ -184,6 +187,7 @@ void Game::run() {
                 }
             }
         }
+
         /*
         Grid<Tile>& tiles { tile_manager_->tiles() };
         const auto scene_dim { tiles.dimensions() };
@@ -212,7 +216,9 @@ void Game::run() {
         }
         */
         for (const auto& entity : entity_manager_->entities()) {
-            if (!world_layer.in_bounds(entity->position)) {
+            auto pos = entity->position - WorldPos(left_bound, 0, top_bound);
+
+            if (!world_layer.in_bounds(pos)) {
                 continue;
             }
 
@@ -233,8 +239,6 @@ void Game::run() {
             if (entity->position.y != camera_pos.y) {
                 continue;
             }
-
-            auto pos = entity->position - WorldPos(left_bound, 0, top_bound);
 
             world_layer.put(DisplayCell(info.glyph, info.color), Vec2<u32>(pos.x, pos.z));
         }

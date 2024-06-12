@@ -25,3 +25,19 @@ i32 WorldSpec::chunks_x() const {
 i32 WorldSpec::chunks_z() const {
     return chunks_z_;
 }
+
+const GenerateNoiseOptions& WorldSpec::height_map_options() const {
+    return height_map_options_;
+}
+
+i32 WorldSpec::max_vegetation() const {
+    return max_vegetation_;
+}
+
+i32 WorldSpec::max_shoreline() const {
+    return max_shoreline_;
+}
+
+i32 WorldSpec::max_water() const {
+    return max_water_;
+}

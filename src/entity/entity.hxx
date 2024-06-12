@@ -16,6 +16,8 @@ public:
 
     WorldPos position;
 
+    bool player_attached_ = false;
+
     float speed = 0;
     float energy = 0;
     float energy_reserved = 0;
