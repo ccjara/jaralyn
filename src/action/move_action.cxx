@@ -18,6 +18,7 @@ ActionResult MoveAction::perform() {
     if (!entity_) {
         return ActionResult::Failure;
     }
+    const Tile* current_tile = tile_accessor_->get_tile(entity_->position);
     const Tile* dest_tile = tile_accessor_->get_tile(destination);
 
     if (dest_tile == nullptr) {
@@ -25,7 +26,33 @@ ActionResult MoveAction::perform() {
     }
 
     if (dest_tile->flags.test(TileFlags::Blocking)) {
-        return ActionResult::Failure;
+        if (!current_tile || !current_tile->flags.test(TileFlags::Ramp)) {
+            return ActionResult::Failure;
+        }
+
+        // unit is standing on a ramp and moving into a blocking tile.
+        // only allow moving up if there is a corresponding down ramp one tile up
+        const auto elevated_position = entity_->position + WorldPos(0, 1, 0);
+        const Tile* elevated_tile = tile_accessor_->get_tile(elevated_position);
+        if (!elevated_tile || !elevated_tile->flags.test(TileFlags::Ramp)) {
+            return ActionResult::Failure;
+        }
+
+        // test whether the move into that direction would be blocked (for example when standing at the ramp and moving diagonally but after elevation and then
+        // moving diagonally there would be a wall)
+        const auto elevated_dest = destination + WorldPos(0, 1, 0);
+        const Tile* elevated_dest_tile = tile_accessor_->get_tile(elevated_dest);
+        if (!elevated_dest_tile || elevated_dest_tile->flags.test(TileFlags::Blocking)) {
+            return ActionResult::Failure;
+        }
+        ++destination.y;
+    } else if (dest_tile->flags.test(TileFlags::Ramp)) {
+        // unit is moving onto a ramp
+        // if there is a down ramp below, teleport them down
+        const Tile* tile_below = tile_accessor_->get_tile(destination - WorldPos(0, 1, 0));
+        if (tile_below && tile_below->flags.test(TileFlags::Ramp)) {
+            --destination.y;
+        }
     }
 
     if (dest_tile->material == MaterialType::Water) {

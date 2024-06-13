@@ -58,3 +58,7 @@ EventResult World::on_player_action_committed(const PlayerActionCommitted& e) {
 const Camera& World::get_camera() const {
     return *camera_;
 }
+
+CameraController& World::get_camera_controller() {
+    return *camera_controller_;
+}

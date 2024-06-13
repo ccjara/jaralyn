@@ -53,11 +53,7 @@ EventResult CameraController::on_key_down(const KeyDownEvent& e) {
         adjust(camera_->position + WorldPos(10, 0, 0));
         Log::debug("Camera now at {}", camera_->position.to_string());
     } else if (e.key == Key::P) {
-        target_ = entity_reader_->player();
-        if (target_) {
-            adjust(target_->position);
-            Log::debug("Camera now at player: {}", camera_->position.to_string());
-        }
+        set_target(entity_reader_->player());
     } else if (e.key == Key::Plus) {
         target_ = nullptr;
         adjust(camera_->position + WorldPos(0, 1, 0));
@@ -110,5 +106,12 @@ EventResult CameraController::on_world_ready(const WorldReadyEvent& e) {
 EventResult CameraController::on_display_resized(const DisplayResizedEvent& e) {
     dispay_size_ = e.size;
     return EventResult::Continue;
+}
+
+void CameraController::set_target(Entity* entity) {
+    target_ = entity;
+    if (target_) {
+        adjust(target_->position);
+    }
 }
 

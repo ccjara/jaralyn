@@ -23,12 +23,12 @@ std::unique_ptr<WorldSpec> WorldSpecCreator::create_world_spec(const CreateWorld
         .z = 0,
         .lacunarity = 3.0f,
         .gain = 0.5f,
-        .use_gradient = true,
-        .radius_mult = 1.0f,
-        .gradient_falloff = 5.0f
+        .use_gradient = false,
     };
 
     generate_noise(spec->height_map_, height_map_options);
+
+    // TODO: try out FBM which does not need normalization
 
     spec->height_map_options_ = height_map_options;
 

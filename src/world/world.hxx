@@ -22,6 +22,8 @@ public:
     void bind_player_controller(IPlayerController* controller);
 
     const Camera& get_camera() const;
+
+    CameraController& get_camera_controller();
 private:
     EventResult on_player_action_committed(const PlayerActionCommitted& e);
     Subscription<PlayerActionCommitted> player_action_committed_sub_;

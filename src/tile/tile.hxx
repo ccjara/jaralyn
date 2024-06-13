@@ -4,7 +4,7 @@
 #include "../gfx/display_cell.hxx"
 
 enum class TileType : unsigned char {
-    Ground,
+    Floor,
     Wall,
 };
 
@@ -29,6 +29,11 @@ enum TileFlags {
     None,
 
     /**
+     * @brief Whether the tile is a ramp
+     */
+    Ramp,
+
+    /**
      * @brief Whether the tile is solid and cannot be passed through
      */
     Blocking,
@@ -45,7 +50,7 @@ enum TileFlags {
 };
 
 struct Tile {
-    TileType type = TileType::Ground;
+    TileType type = TileType::Floor;
 
     MaterialType material = MaterialType::None;
 

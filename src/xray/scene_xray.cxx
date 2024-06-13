@@ -342,7 +342,7 @@ void SceneXray::mapgen_window() {
         generate_map();
     }
     if (world_mask_options.use_gradient &&
-        ImGui::SliderFloat("Gradient Falloff", &world_mask_options.gradient_falloff, 0.0f, 5.0f)) {
+        ImGui::SliderFloat("Gradient Falloff", &world_mask_options.gradient_falloff, 0.0f, 1.0f)) {
         generate_map();
     }
 
@@ -376,7 +376,7 @@ void SceneXray::mapgen_window() {
 
             Log::debug("Clicked on chunk: ({}, {})", chunk_x, chunk_z);
 
-            chunk_manager_->create_chunk({chunk_x, chunk_z});
+            chunk_manager_->create_chunk({ chunk_x, chunk_z });
 
             if (entity_manager_->player() != nullptr) {
                 entity_manager_->player()->position.x = chunk_x * Chunk::CHUNK_SIDE_LENGTH;
@@ -389,7 +389,11 @@ void SceneXray::mapgen_window() {
 
     if (entity_manager_->player() != nullptr) {
         auto p = entity_manager_->player()->position;
-        auto text = fmt::format("Player pos: ({}, {}, {}) - index {}", p.x, p.y, p.z, tile_accessor_->to_local_index(p));
+        auto local_index = tile_accessor_->to_local_index(p);
+        auto text = fmt::format("Player pos: ({}, {}, {}) - index {} - height {}",
+                                p.x, p.y, p.z,
+                                local_index,
+                                chunk_manager_->get_chunk(p)->height_map[p.x % Chunk::CHUNK_SIDE_LENGTH + p.z % Chunk::CHUNK_SIDE_LENGTH * Chunk::CHUNK_SIDE_LENGTH]);
 
         ImGui::TextUnformatted(text.c_str());
     }

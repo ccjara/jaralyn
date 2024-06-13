@@ -69,8 +69,6 @@ EventResult ChunkManager::on_entity_created(const EntityCreatedEvent& e) {
 }
 
 EventResult ChunkManager::on_player_moved(const PlayerMovedEvent& e) {
-    Log::debug("Player moved to {}", e.position.to_string());
-
     // if too close to the edge of the current chunk, load the next chunk
     constexpr i32 CHUNK_LOAD_DISTANCE = 8;
 

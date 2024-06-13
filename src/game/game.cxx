@@ -106,7 +106,9 @@ void Game::init() {
         }
         if (arch_human) {
             auto& human = entity_manager_->create_entity(*arch_human, WorldPos(1, 0, 1));
+            human.position.y = chunk_manager_->get_chunk(human.position)->height_map[human.position.x + human.position.z * Chunk::CHUNK_SIDE_LENGTH];
             entity_manager_->set_controlled_entity(&human);
+            world_->get_camera_controller().set_target(&human);
         } else {
             Log::warn("HUMAN archetype not yet present");
         }
@@ -183,6 +185,9 @@ void Game::run() {
                     u32 screen_x = x - left_bound;
                     u32 screen_z = z - top_bound;
 
+                    if (!tile->flags.test(TileFlags::Revealed)) {
+                        continue;
+                    }
                     world_layer.put(tile->display_info, Vec2<u32>(screen_x, screen_z));
                 }
             }
@@ -218,7 +223,7 @@ void Game::run() {
         for (const auto& entity : entity_manager_->entities()) {
             auto pos = entity->position - WorldPos(left_bound, 0, top_bound);
 
-            if (!world_layer.in_bounds(pos)) {
+            if (!world_layer.in_bounds(Vec2<u32>(pos.x, pos.z))) {
                 continue;
             }
 

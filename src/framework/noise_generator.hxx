@@ -15,7 +15,7 @@ struct GenerateNoiseOptions {
     float gain = 0.5f;
     bool use_gradient = false;
     float radius_mult = 1.0f;
-    float gradient_falloff = 5.0f;
+    float gradient_falloff = 1.0f;
 };
 
 void generate_noise(std::vector<float>& buffer, const GenerateNoiseOptions& options);

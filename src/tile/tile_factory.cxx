@@ -21,7 +21,7 @@ Tile TileFactory::wall() {
 
 Tile TileFactory::grass() {
     Tile t;
-    t.type = TileType::Ground;
+    t.type = TileType::Floor;
     t.state = MaterialState::Solid;
     t.material = MaterialType::Vegetation;
 
@@ -49,7 +49,7 @@ Tile TileFactory::grass() {
 
 Tile TileFactory::water() {
     Tile t;
-    t.type = TileType::Ground;
+    t.type = TileType::Floor;
     t.state = MaterialState::Liquid;
     t.material = MaterialType::Water;
 

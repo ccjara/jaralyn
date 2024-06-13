@@ -20,6 +20,11 @@ public:
      */
     void control(Camera* camera);
 
+    /**
+     * @brief Assigns entity to follow
+     */
+    void set_target(Entity* entity);
+
     Entity* target() const;
 private:
     void adjust(const WorldPos& position);
