@@ -232,78 +232,11 @@ void SceneXray::entity_glyph(Entity* entity) {
 void SceneXray::mapgen_window() {
     ImGui::Begin("Mapgen");
 
-    static GLuint texture;
-
     static GenerateNoiseOptions world_mask_options = world_spec_->height_map_options();
 
-    static std::vector<float> height_map_noise_;
-
-    static float abyss_threshold = 0.2f;
-    static float deepwater_threshold = 0.3f;
-    static float shallow_water_threshold = 0.4f;
-    static float shore_threshold = 0.5f;
-    static float vegetation_threshold = 0.8f;
-    static std::vector<float> height_map;
-    static std::vector<float> world_render = std::vector<float>(
-        world_mask_options.width * world_mask_options.height * 3);
-
-    static const Color WaterAbyss = Color(0, 0, 139);
-    static const Color WaterDeep = Color(0, 24, 145);
-    static const Color WaterShallow = Color(0, 89, 255);
-    static const Color Shore = Color(238, 214, 175);
-    static const Color Vegetation = Color(34, 139, 34);
-    static const Color Mountain = Color(137, 137, 137);
-
-    auto generate_map = [&](bool regen_noise = true) {
-        if (texture == 0) {
-            glGenTextures(1, &texture);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        }
-
-        generate_noise(height_map, world_mask_options);
-
-        const auto height_map_size = height_map.size();
-        for (i32 i = 0; i < height_map_size; ++i) {
-            const auto value = height_map[i];
-            Color color;
-
-            if (value < abyss_threshold) {
-                color = WaterAbyss;
-            } else if (value < deepwater_threshold) {
-                color = WaterDeep;
-            } else if (value < shallow_water_threshold) {
-                color = WaterShallow;
-            } else if (value < shore_threshold) {
-                color = Shore;
-            } else if (value < vegetation_threshold) {
-                color = Vegetation;
-            } else {
-                color = Mountain;
-            }
-
-            world_render[i * 3] = color.r / 255.0f;
-            world_render[i * 3 + 1] = color.g / 255.0f;
-            world_render[i * 3 + 2] = color.b / 255.0f;
-        }
-
-        /*
-        auto height_map_options = world_mask_options;
-
-        height_map_options.high_threshold = 1.0f;
-        height_map_options.low_threshold = 0.0f;
-
-        if (height_map_noise_.size() != world_mask_.size()) {
-            height_map_noise_.resize(world_mask_.size());
-        }
-
-        generate_noise(height_map_noise_, height_map_options);
-        */
-
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, world_mask_options.width, world_mask_options.height, 0, GL_RGB, GL_FLOAT,
-                     world_render.data());
+    auto generate_map = [&]() {
+        const auto noise = generate_noise(world_mask_options);
+        noise_texture_.set_noise(noise, world_mask_options.width, world_mask_options.height);
     };
 
     static bool init = false;
@@ -334,7 +267,6 @@ void SceneXray::mapgen_window() {
     if (ImGui::SliderInt("Octaves", &world_mask_options.octaves, 0.0f, 10)) {
         generate_map();
     }
-
     if (ImGui::Checkbox("Radial Gradient", &world_mask_options.use_gradient)) {
         generate_map();
     }
@@ -346,46 +278,7 @@ void SceneXray::mapgen_window() {
         generate_map();
     }
 
-    if (ImGui::SliderFloat("Abyss Threshold", &abyss_threshold, 0.0f, 1.0f)) {
-        generate_map(false);
-    }
-    if (ImGui::SliderFloat("Deepwater Threshold", &deepwater_threshold, 0.0f, 1.0f)) {
-        generate_map(false);
-    }
-    if (ImGui::SliderFloat("Shallow Water Threshold", &shallow_water_threshold, 0.0f, 1.0f)) {
-        generate_map(false);
-    }
-    if (ImGui::SliderFloat("Shore Threshold", &shore_threshold, 0.0f, 1.0f)) {
-        generate_map(false);
-    }
-    if (ImGui::SliderFloat("Vegetation Threshold", &vegetation_threshold, 0.0f, 1.0f)) {
-        generate_map(false);
-    }
-
-    if (texture != 0) {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-
-        if (ImGui::ImageButton(
-            reinterpret_cast<void*>(static_cast<intptr_t>(texture)),
-            ImVec2((float) world_mask_options.width, (float) world_mask_options.height)
-        )) {
-            ImVec2 mouse_pos = ImGui::GetMousePos();
-            ImVec2 image_pos = ImGui::GetItemRectMin();
-            i32 chunk_x = mouse_pos.x - image_pos.x;
-            i32 chunk_z = mouse_pos.y - image_pos.y;
-
-            Log::debug("Clicked on chunk: ({}, {})", chunk_x, chunk_z);
-
-            chunk_manager_->create_chunk({ chunk_x, chunk_z });
-
-            if (entity_manager_->player() != nullptr) {
-                entity_manager_->player()->position.x = chunk_x * Chunk::CHUNK_SIDE_LENGTH;
-                entity_manager_->player()->position.z = chunk_z * Chunk::CHUNK_SIDE_LENGTH;
-            }
-        }
-
-        ImGui::PopStyleVar();
-    }
+    noise_texture_.draw();
 
     if (entity_manager_->player() != nullptr) {
         auto p = entity_manager_->player()->position;

@@ -4,6 +4,7 @@
 #include "../gfx/display_cell.hxx"
 
 enum class TileType : unsigned char {
+    Empty,
     Floor,
     Wall,
 };
@@ -50,7 +51,7 @@ enum TileFlags {
 };
 
 struct Tile {
-    TileType type = TileType::Floor;
+    TileType type = TileType::Empty;
 
     MaterialType material = MaterialType::None;
 

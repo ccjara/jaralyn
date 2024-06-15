@@ -6,6 +6,7 @@
 #include "config/config.hxx"
 #include "input/input_event.hxx"
 #include "tile/tile.hxx"
+#include "xray/noise_texture.hxx"
 
 class Entity;
 class EntityManager;
@@ -52,6 +53,8 @@ private:
     Events* events_ = nullptr;
     IInputReader* input_ = nullptr;
     Translator* translator_ = nullptr;
+
+    NoiseTexture noise_texture_;
 };
 
 #endif

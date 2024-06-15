@@ -12,25 +12,42 @@ std::unique_ptr<WorldSpec> WorldSpecCreator::create_world_spec(const CreateWorld
     spec->max_shoreline_ = options.max_shoreline;
     spec->max_water_ = options.max_water;
 
-    // generate height map
-    spec->height_map_.resize(spec->chunks_x_ * spec->chunks_z_);
-    GenerateNoiseOptions height_map_options {
-        .frequency = 3.5f,
-        .amplitude = 1.5f,
-        .width = spec->chunks_x_,
-        .height = spec->chunks_z_,
-        .seed = spec->seed_,
+    generate_height_map(*spec);
+    generate_humidity_map(*spec);
+
+    return spec;
+}
+
+void WorldSpecCreator::generate_height_map(WorldSpec& spec) {
+    spec.height_map_.resize(spec.chunks_x_ * spec.chunks_z_);
+    GenerateNoiseOptions options {
+        .frequency = 1.5f,
+        .amplitude = 1.0f,
+        .width = spec.chunks_x_,
+        .height = spec.chunks_z_,
+        .seed = spec.seed_,
         .z = 0,
-        .lacunarity = 3.0f,
+        .lacunarity = 2.0f,
         .gain = 0.5f,
         .use_gradient = false,
     };
 
-    generate_noise(spec->height_map_, height_map_options);
+    spec.height_map_options_ = options;
+    spec.height_map_ = generate_noise(options);
+}
 
-    // TODO: try out FBM which does not need normalization
+void WorldSpecCreator::generate_humidity_map(WorldSpec& spec) {
+    spec.humidity_map_.resize(spec.chunks_x_ * spec.chunks_z_);
+    GenerateNoiseOptions options {
+        .frequency = 0.02f,
+        .width = spec.chunks_x_,
+        .height = spec.chunks_z_,
+        .seed = spec.seed_,
+        .lacunarity = 2.0f,
+        .gain = 0.5f,
+        .use_gradient = false,
+    };
 
-    spec->height_map_options_ = height_map_options;
-
-    return spec;
+    spec.height_map_options_ = options;
+    spec.height_map_ = generate_noise(options);
 }

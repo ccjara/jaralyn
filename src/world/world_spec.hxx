@@ -26,6 +26,11 @@ public:
      * @brief Returns the height map value at the given chunk position
      */
     float height_at(const ChunkPos& chunk_pos) const;
+
+    /**
+     * @brief Returns the humidity value at the given chunk position
+     */
+    float humidity_at(const ChunkPos& chunk_pos) const;
 private:
     /**
      * @brief Height map of the world
@@ -36,6 +41,11 @@ private:
      * @brief Options used to generate the height map
      */
     GenerateNoiseOptions height_map_options_;
+
+    /**
+     * @brief Humidity map of the world
+     */
+    std::vector<float> humidity_map_;
 
     /**
      * @brief Width of the world in chunks

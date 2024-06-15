@@ -146,6 +146,7 @@ set(COMMON_SOURCES
     "world/world_spec.cxx"
 
     "xray/log_xray.cxx"
+    "xray/noise_texture.cxx"
     "xray/perf_xray.cxx"
     "xray/scene_xray.cxx"
     "xray/script_xray.cxx"

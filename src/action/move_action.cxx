@@ -21,11 +21,11 @@ ActionResult MoveAction::perform() {
     const Tile* current_tile = tile_accessor_->get_tile(entity_->position);
     const Tile* dest_tile = tile_accessor_->get_tile(destination);
 
-    if (dest_tile == nullptr) {
+    if (dest_tile == nullptr || dest_tile->type == TileType::Empty) {
         return ActionResult::Failure;
     }
 
-    if (dest_tile->flags.test(TileFlags::Blocking)) {
+    if (dest_tile->type != TileType::Floor) {
         if (!current_tile || !current_tile->flags.test(TileFlags::Ramp)) {
             return ActionResult::Failure;
         }

@@ -37,6 +37,9 @@ struct CreateWorldSpecOptions {
 
 class WorldSpecCreator {
 public:
+    void generate_height_map(WorldSpec& spec);
+    void generate_humidity_map(WorldSpec& spec);
+
     [[nodiscard]] std::unique_ptr<WorldSpec> create_world_spec(const CreateWorldSpecOptions& options);
 };
 

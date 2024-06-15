@@ -10,6 +10,17 @@ float WorldSpec::height_at(const ChunkPos& chunk_pos) const {
     return height_map_[index];
 }
 
+
+float WorldSpec::humidity_at(const ChunkPos& chunk_pos) const {
+    const auto index = chunk_pos.z * chunks_x_ + chunk_pos.x;
+
+    if (index < 0 || index >= humidity_map_.size()) {
+        return 0.0f;
+    }
+
+    return humidity_map_[index];
+}
+
 i32 WorldSpec::seed() const {
     return seed_;
 }
@@ -41,3 +52,4 @@ i32 WorldSpec::max_shoreline() const {
 i32 WorldSpec::max_water() const {
     return max_water_;
 }
+
