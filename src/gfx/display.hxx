@@ -2,6 +2,7 @@
 #define NOEDEN_DISPLAY_HXX
 
 #include "text.hxx"
+#include "display_cell.hxx"
 
 struct TextState {
     Color color { Color::white() };

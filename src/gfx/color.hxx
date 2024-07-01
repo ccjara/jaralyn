@@ -7,9 +7,9 @@
  * This class is globally available as part of the pch.
  */
 struct Color {
-    unsigned char r { 255 };
-    unsigned char g { 255 };
-    unsigned char b { 255 };
+    u8 r = 255;
+    u8 g = 255;
+    u8 b = 255;
 
     constexpr Color() = default;
 
@@ -17,15 +17,16 @@ struct Color {
         assign_from_int(value);
     }
 
-    constexpr Color(unsigned char r, unsigned char g, unsigned char b) :
+    constexpr Color(u8 r, u8 g, u8 b) :
         r(r), g(g), b(b) {
     }
 
-    constexpr void operator=(i32 value) {
+    constexpr Color& operator=(i32 value) {
         assign_from_int(value);
+        return *this;
     }
 
-    static constexpr Color mono(unsigned char value) {
+    static constexpr Color mono(u8 value) {
         return Color(value, value, value);
     }
 
@@ -52,11 +53,21 @@ struct Color {
     static constexpr Color black() {
         return Color(0, 0, 0);
     }
+
+    static constexpr Color from_string(std::string_view text) {
+        i32 hex_color { 0xFFFFFF };
+        std::from_chars(text.data(), text.data() + text.size(), hex_color, 16);
+        return Color(hex_color);
+    }
+
+    constexpr bool operator==(const Color& other) const {
+        return r == other.r && g == other.g && b == other.b;
+    }
 private:
     constexpr void assign_from_int(i32 value) {
-        r = static_cast<unsigned char> ((value >> 16) & 0xFF);
-        g = static_cast<unsigned char> ((value >> 8) & 0xFF);
-        b = static_cast<unsigned char> (value & 0xFF);
+        r = static_cast<u8> ((value >> 16) & 0xFF);
+        g = static_cast<u8> ((value >> 8) & 0xFF);
+        b = static_cast<u8> (value & 0xFF);
     }
 };
 

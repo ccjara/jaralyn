@@ -105,6 +105,14 @@ template<typename t>
 }
 
 /**
+ * @brief Compares two vectors for inequality
+ */
+template<typename t>
+[[nodiscard]] constexpr bool operator!=(const Vec2<t>& lhs, const Vec2<t>& rhs) {
+    return !(lhs == rhs);
+}
+
+/**
  * @brief Returns a new negated version of the given vector
  */
 template<typename t>

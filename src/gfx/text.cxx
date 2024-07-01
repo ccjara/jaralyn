@@ -1,164 +1,93 @@
 #include "text.hxx"
 
-Text::Text(std::string_view s, Vec2<u32> clamp) : raw_(s), clamp_(clamp) {
-    update();
+static constexpr char COMMAND_CHAR = '$';
+static constexpr char COMMAND_COLOR = 'c';
+static constexpr char COMMAND_NEWLINE = 'n';
+static constexpr char COMMAND_RESTORE_COLOR = 'r';
+
+void Text::set_text(std::string_view text) {
+    dirty_ = text != text_;
+    text_ = text;
 }
 
-void Text::set_text(std::string_view s) {
-    raw_ = s;
-}
-
-void Text::set_clamp(Vec2<u32> clamp) {
-    clamp_ = clamp;
-}
-
-const std::vector<Letter>& Text::letters() const {
-    return letters_;
+void Text::set_region(Vec2<i32> region) {
+    dirty_ = region_ != region;
+    region_ = region;
 }
 
 void Text::update() {
-    letters_.clear();
-    if (!clamp_.x || !clamp_.y) {
+    ops_.clear();
+    if (text_.empty() || !region_.x || !region_.y) {
         return;
     }
-    Vec2<u32> offset;
-    const size_t text_length { raw_.length() };
-    static constexpr char CONTROL_CHAR = '$';
 
-    static constexpr size_t MAX_STATES { 8 };
-    std::array<TextState, MAX_STATES> states;
-    TextState* state { states.data() };
-    TextState* const first_state { &states.front() };
-    TextState* const last_state { &states.back() };
+    const i32 max_index = static_cast<i32>(text_.length() - 1);
 
-    auto push_state_copy = [&]() -> bool {
-        if (state == last_state) {
-            return false;
+    std::stack<Color> color_stack;
+
+    TextOp* current_op = &ops_.emplace_back();
+
+    for (i32 i = 0; i <= max_index; ++i) {
+        if (text_[i] != COMMAND_CHAR) {
+            ++current_op->text_end;
+            continue;
         }
-        TextState* const next_state = state + 1;
-        *next_state = *state;
-        state = next_state;
-        return true;
-    };
 
-    const auto parse_color = [](std::string_view text) -> Color {
-        i32 hex_color { 0xFFFFFF };
-        // note: from_chars processes the interval [first,last),
-        //       so the null terminator must be included
-        std::from_chars(&text.front(), &text.back() + 1, hex_color, 16);
-        return Color(hex_color);
-    };
+        if (i >= max_index) {
+            // "$" at the end of the text - invalid - to output a $ sign, $$ must be used
+            break;
+        }
+        current_op->text_end = i;
 
-    // REFACTOR!
+        // i is at the command char ($)
+        switch (text_[i + 1]) {
+           case COMMAND_COLOR: {
+                // $cRRGGBB
+                const auto color_start = i + 2;
+                const auto color_end = i + 7;
 
-    const auto needs_break = [&](size_t i) -> bool {
-        auto x { offset.x };
-
-        while (x <= clamp_.x) {
-            if (i >= text_length) {
-                return false;
-            }
-            switch (raw_[i]) {
-            case CONTROL_CHAR:
-                switch (raw_[i + 1]) {
-                    // can increase `i` safely past boundaries as it is checked on each iteration
-                    case 'c':
-                        i += 8;
-                        continue;
-                    case '!':
-                    case 'w':
-                    case 'a':
-                        i += 2;
-                        continue;
-                    case 'n':
-                        i += 2;
-                        return false;
-                    case '\0':
-                    default:
-                        return false;
+                if (color_end >= max_index) {
+                    // remaining text is equal (noop) or shorter (corrupted) than the control sequence. do not print it
+                    goto EXIT;
                 }
-                continue;
-            case ' ':
-                return false;
+                color_stack.push(Color::from_string(std::string_view(&text_[color_start], 6)));
+                i = color_end + 1;
+                break;
             }
-            ++x;
-            ++i;
-        }
-        return true;
-    };
-
-    for (size_t i { 0 }; i < text_length; ++i) {
-        if (raw_[i] == CONTROL_CHAR) {
-            switch (raw_[i + 1]) {
-                case 'c': {
-                    //      n: 1234567
-                    // t[i+n]: cRRGGBB
-                    if (i + 7 >= text_length || !push_state_copy()) {
-                        break;
-                    }
-                    state->color = parse_color(std::string_view(&raw_[i + 2], 6));
-                    i += 7;
-                    continue;
+            case COMMAND_RESTORE_COLOR:
+                // $r
+                if (!color_stack.empty()) {
+                    color_stack.pop();
                 }
-                case 'w':
-                case 'a':
-                    if (push_state_copy()) {
-                        state->break_word = raw_[i + 1] == 'w';
-                        ++i;
-                        continue;
-                    }
-                    break;
-                case '!':
-                    if (state != first_state) {
-                        --state;
-                        ++i;
-                        continue;
-                    }
-                    break;
-                case 'n':
-                    ++i;
-                    offset.x = 0;
-                    ++offset.y;
-                    continue;
-                case CONTROL_CHAR:
-                    ++i;
-                    break;
-                case '\0':
-                default:
-                    break;
-            }
-        }
-        auto& letter { letters_.emplace_back() };
-        const char c { raw_[i] };
-        bool is_last_char_of_line { offset.x == clamp_.x };
-
-        if (!is_last_char_of_line && state->break_word) {
-            if (c == ' ' && needs_break(i + 1)) {
-                is_last_char_of_line = true;
-            } else {
-                letter.glyph = c;
-            }
-        } else {
-            letter.glyph = c;
-        }
-
-        if (c != ' ') {
-            letter.color = state->color;
-        }
-
-        if (is_last_char_of_line) {
-            offset.x = 0;
-            ++offset.y;
-            letter.offset = offset;
-
-            if (i + 1 < text_length && raw_[i + 1] == ' ') {
-                // skip immediate space at new line
+                i += 2;
+                break;
+            case COMMAND_NEWLINE:
+                // $n
+                current_op->new_line = true;
+                i += 2;
+                break;
+            case COMMAND_CHAR:
+            default:
+                // escaped `$$` or unknown command char: skip only the command char
                 ++i;
-                continue;
-            }
-        } else {
-            ++offset.x;
-            letter.offset = offset;
+                break;
+        }
+
+        current_op = &ops_.emplace_back();
+        current_op->text_start = i;
+        current_op->text_end = i + 1;
+        if (!color_stack.empty()) {
+            current_op->color = color_stack.top();
         }
     }
+EXIT:
+
+    // temp
+    for (auto& op : ops_) {
+        op.text = std::string_view(&text_[op.text_start], &text_[op.text_end]);
+    }
+}
+
+const std::vector<TextOp>& Text::ops() const {
+    return ops_;
 }

@@ -29,6 +29,7 @@
 #include <random>
 #include <source_location>
 #include <string>
+#include <stack>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>

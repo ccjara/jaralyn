@@ -115,7 +115,7 @@ bool Game::initialize() {
     scripting_->add_api<ScriptApi>();
     scripting_->reload();
 
-    if (!realms_->switch_realm(RealmType::World)) {
+    if (!realms_->switch_realm(RealmType::MainMenu)) {
         return false;
     }
 

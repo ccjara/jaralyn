@@ -1,44 +1,45 @@
 #ifndef NOEDEN_TEXT_HXX
 #define NOEDEN_TEXT_HXX
 
-#include "display_cell.hxx"
-
-struct Letter {
+struct TextOp {
     /**
-     * @brief Glyph to render
+     * @brief Slice of text to render in this block
      */
-    i32 glyph { 0 };
+    std::string_view text;
+
+    i32 text_start = 0;
+
+    i32 text_end = 0;
 
     /**
-     * @brief Color of this letter
+     * @brief Color to use when rendering the text
      */
     Color color = Color::white();
 
     /**
-     * @brief Offset that will be added to the actual position of the text to render
+     * @brief Position (offset) at which to render
      */
-    Vec2<i32> offset;
+    Vec2<i32> position = {0, 0};
+
+    /**
+     * @brief Whether this text op will end with a new line
+     */
+    bool new_line = false;
 };
 
 class Text {
 public:
-    explicit Text() = default;
-    explicit Text(std::string_view s, Vec2<u32> clamp);
-
-    void set_text(std::string_view s);
-    void set_clamp(Vec2<u32> clamp);
+    void set_text(std::string_view text);
+    void set_region(Vec2<i32> region);
     void update();
 
-    [[nodiscard]] const std::vector<Letter>& letters() const;
+    const std::vector<TextOp>& ops() const;
 private:
-    struct TextState {
-        Color color { Color::white() };
-        bool break_word { true };
-    };
+    bool dirty_ = false;
 
-    std::vector<Letter> letters_;
-    std::string raw_;
-    Vec2<u32> clamp_;
+    std::vector<TextOp> ops_ = {};
+    std::string text_ = "";
+    Vec2<i32> region_ = {0, 0};
 };
 
 #endif

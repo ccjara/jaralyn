@@ -15,7 +15,6 @@ function configure()
             log:debug("[system.lua]: Realm loaded: " .. realm);
 
             if realm == "MAIN_MENU" then
-            log:debug("[system.lua]: TRYING!");
                 script:run("main_menu");
             end
         end

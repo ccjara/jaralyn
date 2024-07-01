@@ -23,6 +23,7 @@
 #include <memory>
 #include <optional>
 #include <random>
+#include <stack>
 #include <string>
 #include <source_location>
 #include <unordered_map>
